@@ -70,6 +70,9 @@ jobs:
           node-version: 16.x
           registry-url: https://registry.npmjs.org/
 
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v2
+
       - name: Print Build Artifacts
         run: ls -R
 
