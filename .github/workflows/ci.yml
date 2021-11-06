@@ -245,15 +245,15 @@ jobs:
   #         name: binding-${{ matrix.settings.target }}
   #         path: src/napi/*.node
 
-  # release:
-  #   name: Release
-  #   runs-on: ubuntu-latest
-  #   needs:
-  #     - build-package
-  #     # - build-bindings
-  #     # - lint
-  #     # - unit-tests
-  #     # - e2e-tests
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs:
+      - build-package
+      # - build-bindings
+      # - lint
+      # - unit-tests
+      # - e2e-tests
 
   #   steps:
   #     - name: Checkout
@@ -285,9 +285,9 @@ jobs:
   #     name: Qwik NPM Package
   #     path: builder.io-qwik.tgz
 
-  # - run: |
-  #     echo "Hello ${{ github.event.inputs.name }}!"
-  #     echo "- in ${{ github.event.inputs.home }}!"
+  - run: |
+      echo "github.event_name: ${{ github.event_name }}"
+      echo "github.event_path: ${{ github.event_path }}"
 
   # - name: Publish @builder.io/qwik
   #   if: ${{ github.event_name == 'workflow_dispatch' }}
