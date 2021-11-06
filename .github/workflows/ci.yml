@@ -10,10 +10,6 @@ on:
       version:
         description: 'Version'
         required: true
-      branch:
-        description: 'Branch'
-        required: true
-        default: 'main'
       disttag:
         description: 'NPM Dist Tag: latest, next, dev'
         required: true
@@ -25,9 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses:
-          actions/checkout@v2
-          # ref: ${{ github.event.inputs.branch }}
+        uses: actions/checkout@v2
 
       # - name: Setup Node.js
       #   uses: actions/setup-node@v1
