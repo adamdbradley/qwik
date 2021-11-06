@@ -5,6 +5,7 @@ import {
   access as fsAccess,
   copyFile as fsCopyFile,
   existsSync,
+  mkdirSync,
   readdirSync,
   readFile as fsReadFile,
   readFileSync,
@@ -15,6 +16,7 @@ import {
   writeFile as fsWriteFile,
 } from 'fs';
 import { promisify } from 'util';
+import gzipSize from 'gzip-size';
 
 /**
  * Contains information about the build we're generating by parsing
@@ -27,15 +29,20 @@ export interface BuildConfig {
   srcDir: string;
   scriptsDir: string;
   tscDir: string;
-  pkgDir: string;
+  distPkgDir: string;
   esmNode: boolean;
 
   api?: boolean;
   build?: boolean;
+  commit?: boolean;
   dev?: boolean;
   jsx?: boolean;
+  platformBinding?: boolean;
+  publish?: boolean;
+  setVerison?: string;
   tsc?: boolean;
   validate?: boolean;
+  validateDistTag?: string;
   watch?: boolean;
 }
 
@@ -50,9 +57,13 @@ export function loadConfig(args: string[] = []) {
   config.distDir = join(config.rootDir, 'dist-dev');
   config.srcDir = join(config.rootDir, 'src');
   config.scriptsDir = join(config.rootDir, 'scripts');
-  config.pkgDir = join(config.distDir, '@builder.io-qwik');
+  config.distPkgDir = join(config.distDir, '@builder.io-qwik');
   config.tscDir = join(config.distDir, 'tsc-out');
   config.esmNode = parseInt(process.version.substr(1).split('.')[0], 10) >= 14;
+  config.platformBinding = (config as any)['platform-binding'];
+  config.setVerison = (config as any)['set-version'];
+  config.setVerison = (config as any)['set-version'];
+  config.validateDistTag = (config as any)['validate-dist-tag'];
 
   return config;
 }
@@ -96,22 +107,22 @@ export function watcher(config: BuildConfig, filename?: string): WatchMode | boo
 export function inlineQwikScripts(config: BuildConfig) {
   return {
     'global.QWIK_LOADER_DEFAULT_MINIFIED': JSON.stringify(
-      readFileSync(join(config.pkgDir, 'qwikloader.js'), 'utf-8').trim()
+      readFileSync(join(config.distPkgDir, 'qwikloader.js'), 'utf-8').trim()
     ),
     'global.QWIK_LOADER_DEFAULT_DEBUG': JSON.stringify(
-      readFileSync(join(config.pkgDir, 'qwikloader.debug.js'), 'utf-8').trim()
+      readFileSync(join(config.distPkgDir, 'qwikloader.debug.js'), 'utf-8').trim()
     ),
     'global.QWIK_LOADER_OPTIMIZE_MINIFIED': JSON.stringify(
-      readFileSync(join(config.pkgDir, 'qwikloader.optimize.js'), 'utf-8').trim()
+      readFileSync(join(config.distPkgDir, 'qwikloader.optimize.js'), 'utf-8').trim()
     ),
     'global.QWIK_LOADER_OPTIMIZE_DEBUG': JSON.stringify(
-      readFileSync(join(config.pkgDir, 'qwikloader.optimize.debug.js'), 'utf-8').trim()
+      readFileSync(join(config.distPkgDir, 'qwikloader.optimize.debug.js'), 'utf-8').trim()
     ),
     'global.QWIK_PREFETCH_MINIFIED': JSON.stringify(
-      readFileSync(join(config.pkgDir, 'prefetch.js'), 'utf-8').trim()
+      readFileSync(join(config.distPkgDir, 'prefetch.js'), 'utf-8').trim()
     ),
     'global.QWIK_PREFETCH_DEBUG': JSON.stringify(
-      readFileSync(join(config.pkgDir, 'prefetch.debug.js'), 'utf-8').trim()
+      readFileSync(join(config.distPkgDir, 'prefetch.debug.js'), 'utf-8').trim()
     ),
   };
 }
@@ -168,8 +179,10 @@ export function injectGlobalThisPoly(config: BuildConfig) {
  */
 export function rollupOnWarn(warning: any, warn: any) {
   // skip certain warnings
+  if (warning.code === `CIRCULAR_DEPENDENCY`) return;
   if (warning.code === `PREFER_NAMED_EXPORTS`) return;
   if (warning.message.includes(`Rollup 'sourcemap'`)) return;
+  console.log(warning);
   warn(warning);
 }
 
@@ -177,7 +190,15 @@ export function rollupOnWarn(warning: any, warn: any) {
  * Helper just to get and format a file's size for logging.
  */
 export async function fileSize(filePath: string) {
-  const bytes = (await stat(filePath)).size;
+  const text = await readFile(filePath);
+  const gzipBytes = await gzipSize(text);
+
+  const size = formatFileSize(text.length);
+  const gzip = formatFileSize(gzipBytes);
+  return `${size} (${gzip} gz)`;
+}
+
+function formatFileSize(bytes: number) {
   if (bytes === 0) return '0b';
   const k = 1024;
   const dm = bytes < k ? 0 : 1;
@@ -204,7 +225,20 @@ export function emptyDir(dir: string) {
         unlinkSync(item);
       }
     }
+  } else {
+    ensureDir(dir);
   }
+}
+
+export function ensureDir(dir: string) {
+  try {
+    mkdirSync(dir, { recursive: true });
+  } catch (e) {}
+}
+
+export function panic(msg: string) {
+  console.error(`\n❌ ${msg}\n`);
+  process.exit(1);
 }
 
 /**

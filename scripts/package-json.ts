@@ -8,10 +8,7 @@ import { join } from 'path';
  * Note that some of the properties can be pulled from the root package.json.
  */
 export async function generatePackageJson(config: BuildConfig) {
-  const pkgJsonRoot = join(config.rootDir, 'package.json');
-  const pkgJsonDist = join(config.pkgDir, 'package.json');
-
-  const rootPkg: PackageJSON = JSON.parse(await readFile(pkgJsonRoot, 'utf-8'));
+  const rootPkg = await readPackageJson(config.rootDir);
 
   const distPkg: PackageJSON = {
     name: rootPkg.name,
@@ -32,12 +29,16 @@ export async function generatePackageJson(config: BuildConfig) {
         require: './core.cjs',
       },
       './jsx-runtime': {
-        import: './jsx-runtime.mjs',
-        require: './jsx-runtime.cjs',
+        import: './jsx-runtime/index.mjs',
+        require: './jsx-runtime/index.cjs',
       },
       './optimizer': {
-        import: './optimizer.mjs',
-        require: './optimizer.cjs',
+        import: './optimizer/index.mjs',
+        require: './optimizer/index.cjs',
+      },
+      './optimizer/rollup': {
+        import: './optimizer/rollup.mjs',
+        require: './optimizer/rollup.cjs',
       },
       './server': {
         import: './server/index.mjs',
@@ -62,11 +63,21 @@ export async function generatePackageJson(config: BuildConfig) {
     engines: rootPkg.engines,
   };
 
-  const pkgContent = JSON.stringify(distPkg, null, 2);
+  await writePackageJson(config.distPkgDir, distPkg);
 
-  await writeFile(pkgJsonDist, pkgContent);
+  console.log('🐷', 'generated package.json');
+}
 
-  console.log('👻', 'generate package.json');
+export async function readPackageJson(pkgJsonDir: string) {
+  const pkgJsonPath = join(pkgJsonDir, 'package.json');
+  const pkgJson: PackageJSON = JSON.parse(await readFile(pkgJsonPath, 'utf-8'));
+  return pkgJson;
+}
+
+export async function writePackageJson(pkgJsonDir: string, pkgJson: PackageJSON) {
+  const pkgJsonPath = join(pkgJsonDir, 'package.json');
+  const pkgJsonStr = JSON.stringify(pkgJson, null, 2) + '\n';
+  await writeFile(pkgJsonPath, pkgJsonStr);
 }
 
 /**
@@ -74,45 +85,57 @@ export async function generatePackageJson(config: BuildConfig) {
  * This is used to create the package.json "files" property.
  */
 const PACKAGE_FILES = [
+  // core
   'core.cjs',
   'core.cjs.map',
   'core.min.mjs',
   'core.mjs',
   'core.mjs.map',
   'core.d.ts',
-  'jsx-runtime.cjs',
-  'jsx-runtime.mjs',
-  'jsx-runtime.d.ts',
-  'LICENSE',
-  'optimizer.cjs',
-  'optimizer.cjs.map',
-  'optimizer.mjs',
-  'optimizer.mjs.map',
-  'optimizer.d.ts',
-  'package.json',
+
+  // jsx-runtime
+  'jsx-runtime/index.cjs',
+  'jsx-runtime/index.cjs.map',
+  'jsx-runtime/index.mjs',
+  'jsx-runtime/index.mjs.map',
+  'jsx-runtime/index.d.ts',
+
+  // optimizer
+  'optimizer/index.cjs',
+  'optimizer/index.mjs',
+  'optimizer/index.d.ts',
+  'optimizer/rollup.cjs',
+  'optimizer/rollup.mjs',
+
+  // prefetch
   'prefetch.js',
   'prefetch.debug.js',
+
+  // qwikloader
   'qwikloader.js',
   'qwikloader.debug.js',
   'qwikloader.optimize.js',
   'qwikloader.optimize.debug.js',
-  'README.md',
+
+  // server
   'server/index.cjs',
-  'server/index.cjs.map',
   'server/index.mjs',
-  'server/index.mjs.map',
   'server/index.d.ts',
+
+  // testing
   'testing/index.cjs',
-  'testing/index.cjs.map',
   'testing/index.mjs',
-  'testing/index.mjs.map',
   'testing/index.d.ts',
-  'testing/jest-preprocessor.cjs',
-  'testing/jest-preprocessor.cjs.map',
-  'testing/jest-preprocessor.mjs',
-  'testing/jest-preprocessor.mjs.map',
   'testing/jest-preset.cjs',
-  'testing/jest-preset.cjs.map',
   'testing/jest-preset.mjs',
-  'testing/jest-preset.mjs.map',
+
+  // package files
+  'README.md',
+  'LICENSE',
+  'package.json',
+
+  // platform bindings (only found in CI build)
+  'qwik.darwin-arm64.node',
+  'qwik.darwin-x64.node',
+  'qwik.win32-x64-msvc.node',
 ];

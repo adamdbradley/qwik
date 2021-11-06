@@ -2,7 +2,7 @@ import { InputOptions, OutputOptions, rollup, Plugin } from 'rollup';
 import { minify, MinifyOptions } from 'terser';
 import { BuildConfig, fileSize, rollupOnWarn } from './util';
 import { join } from 'path';
-import { Optimizer } from '../src/optimizer';
+import { transform } from 'esbuild';
 
 /**
  * Builds the qwikloader javascript files. These files can be used
@@ -11,10 +11,6 @@ import { Optimizer } from '../src/optimizer';
  * a utility function.
  */
 export async function submoduleQwikLoader(config: BuildConfig) {
-  const optimizer = new Optimizer({
-    rootDir: config.rootDir,
-  });
-
   const input: InputOptions = {
     input: join(config.srcDir, 'qwikloader.ts'),
     plugins: [
@@ -27,12 +23,8 @@ export async function submoduleQwikLoader(config: BuildConfig) {
           return null;
         },
         async transform(code, id) {
-          const result = await optimizer.transformModule({
-            text: code,
-            filePath: id,
-            module: 'es',
-          });
-          return result.text;
+          const result = await transform(code, { sourcefile: id, format: 'esm', loader: 'ts' });
+          return result.code;
         },
       },
     ],
@@ -41,7 +33,7 @@ export async function submoduleQwikLoader(config: BuildConfig) {
 
   const defaultMinified: OutputOptions = {
     // QWIK_LOADER_DEFAULT_MINIFIED
-    dir: config.pkgDir,
+    dir: config.distPkgDir,
     format: 'es',
     exports: 'none',
     plugins: [
@@ -64,7 +56,7 @@ export async function submoduleQwikLoader(config: BuildConfig) {
 
   const defaultDebug: OutputOptions = {
     // QWIK_LOADER_DEFAULT_DEBUG
-    dir: config.pkgDir,
+    dir: config.distPkgDir,
     format: 'es',
     entryFileNames: `[name].debug.js`,
     exports: 'none',
@@ -91,7 +83,7 @@ export async function submoduleQwikLoader(config: BuildConfig) {
 
   const optimizeMinified: OutputOptions = {
     // QWIK_LOADER_OPTIMIZE_MINIFIED
-    dir: config.pkgDir,
+    dir: config.distPkgDir,
     format: 'es',
     entryFileNames: `[name].optimize.js`,
     exports: 'none',
@@ -115,7 +107,7 @@ export async function submoduleQwikLoader(config: BuildConfig) {
 
   const optimizeDebug: OutputOptions = {
     // QWIK_LOADER_OPTIMIZE_DEBUG
-    dir: config.pkgDir,
+    dir: config.distPkgDir,
     format: 'es',
     entryFileNames: `[name].optimize.debug.js`,
     exports: 'none',
@@ -149,8 +141,8 @@ export async function submoduleQwikLoader(config: BuildConfig) {
     build.write(optimizeDebug),
   ]);
 
-  const optimizeFileSize = await fileSize(join(config.pkgDir, 'qwikloader.optimize.js'));
-  console.log('🚗 qwikloader:', optimizeFileSize);
+  const optimizeFileSize = await fileSize(join(config.distPkgDir, 'qwikloader.optimize.js'));
+  console.log('🐸 qwikloader:', optimizeFileSize);
 }
 
 function terser(opts: MinifyOptions): Plugin {

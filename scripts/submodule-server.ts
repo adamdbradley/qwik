@@ -25,8 +25,8 @@ export async function submoduleServer(config: BuildConfig) {
 
   const opts: BuildOptions = {
     entryPoints: [join(config.srcDir, submodule, 'index.ts')],
-    outdir: join(config.pkgDir, submodule),
-    sourcemap: true,
+    outdir: join(config.distPkgDir, submodule),
+    sourcemap: config.dev,
     bundle: true,
     target,
     banner,
@@ -63,7 +63,7 @@ export async function submoduleServer(config: BuildConfig) {
 
   await Promise.all([esm, cjs]);
 
-  console.log('🐠', submodule);
+  console.log('🐰', submodule);
 }
 
 async function bundleDomino(config: BuildConfig) {

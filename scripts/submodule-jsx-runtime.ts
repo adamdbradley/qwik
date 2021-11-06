@@ -17,10 +17,11 @@ export async function submoduleJsxRuntime(config: BuildConfig) {
   const submodule = 'jsx-runtime';
 
   const opts: BuildOptions = {
-    entryPoints: [join(config.srcDir, 'jsx_runtime.ts')],
-    entryNames: submodule,
-    outdir: config.pkgDir,
+    entryPoints: [join(config.srcDir, 'jsx-runtime.ts')],
+    entryNames: 'index',
+    outdir: join(config.distPkgDir, submodule),
     bundle: true,
+    sourcemap: true,
     target,
   };
 
@@ -28,7 +29,7 @@ export async function submoduleJsxRuntime(config: BuildConfig) {
     ...opts,
     format: 'esm',
     outExtension: { '.js': '.mjs' },
-    plugins: [importPath(/^@builder\.io\/qwik$/, './core.mjs')],
+    plugins: [importPath(/^@builder\.io\/qwik$/, '../core.mjs')],
     watch: watcher(config, submodule),
   });
 
@@ -36,11 +37,11 @@ export async function submoduleJsxRuntime(config: BuildConfig) {
     ...opts,
     format: 'cjs',
     outExtension: { '.js': '.cjs' },
-    plugins: [importPath(/^@builder\.io\/qwik$/, './core.cjs')],
+    plugins: [importPath(/^@builder\.io\/qwik$/, '../core.cjs')],
     watch: watcher(config),
   });
 
   await Promise.all([esm, cjs]);
 
-  console.log('👾', submodule);
+  console.log('🐮', submodule);
 }
