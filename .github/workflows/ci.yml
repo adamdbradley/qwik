@@ -257,7 +257,9 @@ jobs:
 
     steps:
       - run: |
-          echo "github.event_name: ${{ github }}"
+          echo "github.action: ${{ github.action }}"
+          echo "github.action_path: ${{ github.action_path }}"
+          echo "github.base_ref: ${{ github.base_ref }}"
 
   #     - name: Checkout
   #       uses: actions/checkout@v2
