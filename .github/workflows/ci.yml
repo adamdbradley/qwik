@@ -46,14 +46,14 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: dist-builder-io-qwik
-          path: dist-dev/@builder.io-qwik
+          path: dist-dev/@builder.io-qwik/
           if-no-files-found: error
 
       - name: Upload Build Scripts
         uses: actions/upload-artifact@master
         with:
           name: scripts
-          path: dist-dev/tsc-out/scripts
+          path: dist-dev/tsc-out/scripts/*.js
           if-no-files-found: error
 
   release:
@@ -70,7 +70,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 16.x
           registry-url: https://registry.npmjs.org/
 
       - name: Print Build Artifacts
