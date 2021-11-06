@@ -62,7 +62,6 @@ export function loadConfig(args: string[] = []) {
   config.esmNode = parseInt(process.version.substr(1).split('.')[0], 10) >= 14;
   config.platformBinding = (config as any)['platform-binding'];
   config.setVerison = (config as any)['set-version'];
-  config.setVerison = (config as any)['set-version'];
   config.validateDistTag = (config as any)['validate-dist-tag'];
 
   return config;
