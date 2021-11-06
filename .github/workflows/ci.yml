@@ -285,9 +285,9 @@ jobs:
   #     name: Qwik NPM Package
   #     path: builder.io-qwik.tgz
 
-  - run: |
-      echo "github.event_name: ${{ github.event_name }}"
-      echo "github.event_path: ${{ github.event_path }}"
+    - run: |
+        echo "github.event_name: ${{ github.event_name }}"
+        echo "github.event_path: ${{ github.event_path }}"
 
   # - name: Publish @builder.io/qwik
   #   if: ${{ github.event_name == 'workflow_dispatch' }}
