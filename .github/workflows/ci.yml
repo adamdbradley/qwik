@@ -59,19 +59,19 @@ jobs:
           - host: macos-latest
             target: x86_64-apple-darwin
             build: |
-              cd src/napi && napi build --platform --release --config=napi.config.json
+              yarn build.napi
               strip -x *.node
 
           - host: macos-latest
             target: aarch64-apple-darwin
             build: |
-              cd src/napi && napi build --platform --release --config=napi.config.json --target=aarch64-apple-darwin
+              yarn build.napi --target=aarch64-apple-darwin
               strip -x *.node
 
           - host: windows-latest
             target: x86_64-pc-windows-msvc
             build: |
-              cd src/napi && napi build --platform --release --config=napi.config.json
+              yarn build.napi --config=napi.config.json
 
     name: Build ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
@@ -132,10 +132,6 @@ jobs:
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
-
-      - name: Install NPM Dependencies
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
 
       - name: Set Cargo Version
         if: ${{ github.event_name == 'workflow_dispatch' }}
