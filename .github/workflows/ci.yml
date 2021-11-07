@@ -61,20 +61,26 @@ jobs:
           node-version: 16.x
           registry-url: https://registry.npmjs.org/
 
+      - name: Install wasm-pack
+        uses: jetli/wasm-pack-action@v0.3.0
+        with:
+          version: 'latest'
+
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Build NodeJS WASM
-        uses: jetli/wasm-pack-action@v0.3.0
-        with:
-          version: 'latest'
+        working-directory: ./src/wasm
         run: wasm-pack build --target=nodejs --release --out-dir=wasm-nodejs
 
       - name: Build Web WASM
-        uses: jetli/wasm-pack-action@v0.3.0
-        with:
-          version: 'latest'
-        run: wasm-pack build --target=web --release --out-dir=wasm-web
+        working-directory: ./src/wasm
+        - name: Set env 
+        run: |
+          echo "CARGO_PROFILE_RELEASE_LTO=true" >> $GITHUB_ENV
+          echo "CARGO_PROFILE_RELEASE_PANIC=abort" >> $GITHUB_ENV
+          echo "CARGO_PROFILE_RELEASE_OPT_LEVEL=z" >> $GITHUB_ENV
+          wasm-pack build --target=web --release --out-dir=wasm-web
 
       - name: Print Output
         run: ls -R
