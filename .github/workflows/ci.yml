@@ -30,12 +30,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Cache Dependencies
+      - name: Cache NPM Dependencies
         uses: actions/cache@v2
         with:
           path: node_modules
-          key: npm-cache-${{ hashFiles('yarn.lock') }}
-          restore-keys: npm-cache-
+          key: npm-cache-ubuntu-${{ hashFiles('yarn.lock') }}
+          restore-keys: npm-cache-ubuntu-
 
       - name: Install NPM Dependencies
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
@@ -75,9 +75,6 @@ jobs:
 
     name: Build ${{ matrix.settings.target }}
     runs-on: ${{ matrix.settings.host }}
-    defaults:
-      run:
-        working-directory: ./src/napi/
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -118,7 +115,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: node_modules
-          key: npm-cache-${{ matrix.settings.target }}-node@16-${{ hashFiles('yarn.lock') }}
+          key: npm-cache-${{ matrix.settings.target }}-${{ hashFiles('yarn.lock') }}
+          restore-keys: npm-cache-${{ matrix.settings.target }}-
 
       - name: Pull Latest Image
         run: ${{ matrix.settings.docker }}
@@ -132,6 +130,9 @@ jobs:
         run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
         shell: bash
+
+      - name: Install NPM Dependencies
+        run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
 
       - name: Set Cargo Version
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -200,12 +201,12 @@ jobs:
           name: builder-io-qwik
           path: dist-dev/builder.io-qwik.tgz
 
-      - name: Cache Dependencies
+      - name: Cache NPM Dependencies
         uses: actions/cache@v2
         with:
           path: node_modules
-          key: npm-cache-${{ hashFiles('yarn.lock') }}
-          restore-keys: npm-cache-
+          key: npm-cache-ubuntu-${{ hashFiles('yarn.lock') }}
+          restore-keys: npm-cache-ubuntu-
 
       - name: Install NPM Dependencies
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
@@ -223,12 +224,12 @@ jobs:
   #     - name: Checkout
   #       uses: actions/checkout@v2
 
-  #     - name: Cache Dependencies
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: node_modules
-  #         key: npm-cache-${{ hashFiles('yarn.lock') }}
-  #         restore-keys: npm-cache-
+  # - name: Cache NPM Dependencies
+  #   uses: actions/cache@v2
+  #   with:
+  #     path: node_modules
+  #     key: npm-cache-ubuntu-${{ hashFiles('yarn.lock') }}
+  #     restore-keys: npm-cache-ubuntu-
 
   #     - name: Install NPM Dependencies
   #       run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
@@ -254,12 +255,12 @@ jobs:
   #     - name: Checkout
   #       uses: actions/checkout@v2
 
-  #     - name: Cache Dependencies
-  #       uses: actions/cache@v2
-  #       with:
-  #         path: node_modules
-  #         key: npm-cache-${{ hashFiles('yarn.lock') }}
-  #         restore-keys: npm-cache-
+  # - name: Cache NPM Dependencies
+  #   uses: actions/cache@v2
+  #   with:
+  #     path: node_modules
+  #     key: npm-cache-ubuntu-${{ hashFiles('yarn.lock') }}
+  #     restore-keys: npm-cache-ubuntu-
 
   #     - name: Install NPM Dependencies
   #       run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
