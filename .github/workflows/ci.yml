@@ -73,14 +73,14 @@ jobs:
         working-directory: ./src/wasm
         run: wasm-pack build --target=nodejs --release --out-dir=wasm-nodejs
 
-      - name: Build Web WASM
-        working-directory: ./src/wasm
-        - name: Set env 
-        run: |
-          echo "CARGO_PROFILE_RELEASE_LTO=true" >> $GITHUB_ENV
-          echo "CARGO_PROFILE_RELEASE_PANIC=abort" >> $GITHUB_ENV
-          echo "CARGO_PROFILE_RELEASE_OPT_LEVEL=z" >> $GITHUB_ENV
-          wasm-pack build --target=web --release --out-dir=wasm-web
+      # - name: Build Web WASM
+      #   working-directory: ./src/wasm
+      #   - name: Set env
+      #   run: |
+      #     echo "CARGO_PROFILE_RELEASE_LTO=true" >> $GITHUB_ENV
+      #     echo "CARGO_PROFILE_RELEASE_PANIC=abort" >> $GITHUB_ENV
+      #     echo "CARGO_PROFILE_RELEASE_OPT_LEVEL=z" >> $GITHUB_ENV
+      #     wasm-pack build --target=web --release --out-dir=wasm-web
 
       - name: Print Output
         run: ls -R
