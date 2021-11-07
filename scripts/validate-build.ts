@@ -40,20 +40,14 @@ export async function validateBuild(config: BuildConfig) {
         case '.map':
           JSON.parse(readFileSync(filePath, 'utf-8'));
           break;
-        case '.node':
-          // platform bindings only created in CI
-          break;
         default:
           const content = readFileSync(filePath, 'utf-8');
           if (content.trim() === '') {
-            throw new Error('empty file');
+            panic(`Empty file: ${filePath}`);
           }
       }
-    } catch (e) {
-      console.error('Validate Build File Error!');
-      console.error(filePath);
-      console.error(e);
-      process.exit(1);
+    } catch (e: any) {
+      panic(`Validate Build File Error!: ${String(e.stack || e)}`);
     }
   }
 
@@ -70,7 +64,7 @@ export async function validateBuild(config: BuildConfig) {
         } else if (s.isFile()) {
           allFiles.push(filePath);
         } else {
-          throw new Error(`unexpected ${filePath}`);
+          panic(`Unexpected ${filePath}`);
         }
       });
   }
@@ -88,7 +82,7 @@ export async function validateBuild(config: BuildConfig) {
     );
   }
 
-  console.log('🏅', 'validated build');
+  console.log('🏅 validated build');
 }
 
 /**
@@ -115,7 +109,7 @@ export function validateTypeScriptFile(config: BuildConfig, tsFilePath: string) 
       getNewLine: () => ts.sys.newLine,
       getCanonicalFileName: (f: string) => f,
     };
-    throw new Error('🧨  ' + ts.formatDiagnostics(tsDiagnostics, host));
+    panic(ts.formatDiagnostics(tsDiagnostics, host));
   }
 }
 
@@ -149,11 +143,12 @@ async function validatePackageJson(config: BuildConfig, pkg: PackageJSON) {
 async function validatePath(config: BuildConfig, path: string) {
   try {
     await access(join(config.distPkgDir, path));
-  } catch (e) {
-    console.error(
-      `Error validating path "${path}" inside of "${join(config.distPkgDir, 'package.json')}"`
+  } catch (e: any) {
+    panic(
+      `Error validating path "${path}" inside of "${join(
+        config.distPkgDir,
+        'package.json'
+      )}": ${String(e.stack || e)}`
     );
-    console.error(e);
-    process.exit(1);
   }
 }

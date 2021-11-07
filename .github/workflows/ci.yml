@@ -20,14 +20,14 @@ jobs:
     name: Build Package
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
       - name: Setup Node.js
         uses: actions/setup-node@v1
         with:
           node-version: 16.x
           registry-url: https://registry.npmjs.org/
+
+      - name: Checkout
+        uses: actions/checkout@v2
 
       - name: Cache Dependencies
         uses: actions/cache@v2
@@ -39,20 +39,25 @@ jobs:
       - name: Install NPM Dependencies
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
 
-      - name: Build
-        run: yarn build.ci --set-version=${{ github.event.inputs.version }} --validate-dist-tag=${{ github.event.inputs.disttag }}
+      - name: Prepare Dev Build
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        run: yarn build.ci
+
+      - name: Prepare Publish Build
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: yarn build.ci --set-version=${{ github.event.inputs.version }} --set-dist-tag=${{ github.event.inputs.disttag }}
 
       - name: Upload Package Build Artifacts
         uses: actions/upload-artifact@master
         with:
-          name: dist-dev/@builder.io-qwik
+          name: dist-dev-builder-io-qwik
           path: dist-dev/@builder.io-qwik
           if-no-files-found: error
 
       - name: Upload Build Scripts
         uses: actions/upload-artifact@master
         with:
-          name: dist-dev/scripts
+          name: dist-scripts
           path: dist-dev/tsc-out/scripts/**/*.js
           if-no-files-found: error
 
@@ -70,38 +75,47 @@ jobs:
           node-version: 16.x
           registry-url: https://registry.npmjs.org/
 
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Download Build Artifacts
         uses: actions/download-artifact@v2
 
-      - name: Print Build Artifacts
-        run: ls -R
+      - name: Print Package Build Artifacts
+        run: ls -R dist-dev-builder-io-qwik
 
-      # - name: asdf
-      #   run: node dist-dev/scripts/release.js
+      # - name: Print Platform Build Artifacts
+      #   run: ls -R binding-*
 
-      # - name: Publish @builder.io/qwik
-      #   if: ${{ github.event_name == 'workflow_dispatch' }}
+      - name: Move Package Artifacts
+        run: |
+          mkdir dist-dev
+          mkdir dist-dev/@builder.io-qwik
+          mv dist-dev-builder-io-qwik dist-dev/@builder.io-qwik
+
+      # - name: Move Platform Bindings Artifacts
       #   run: |
-      #     npm version ${{ github.event.inputs.version }}
+      #     mv binding-aarch64-apple-darwin/qwik.darwin-arm64.node dist-builder-io-qwik/qwik.darwin-arm64.node
+      #     mv binding-x86_64-apple-darwin/qwik.darwin-x64.node dist-builder-io-qwik/qwik.darwin-x64.node
+      #     mv binding-x86_64-pc-windows-msvc/qwik.win32-x64-msvc.node dist-builder-io-qwik/qwik.win32-x64-msvc.node
 
-  # - name: Move Platform Bindings
-  #   run: |
-  #     mv binding-aarch64-apple-darwin/qwik.darwin-arm64.node dist-builder-io-qwik/qwik.darwin-arm64.node
-  #     mv binding-x86_64-apple-darwin/qwik.darwin-x64.node dist-builder-io-qwik/qwik.darwin-x64.node
-  #     mv binding-x86_64-pc-windows-msvc/qwik.win32-x64-msvc.node dist-builder-io-qwik/qwik.win32-x64-msvc.node
+      - name: Print Dist Directory
+        run: ls -R dist-dev
 
-  # - name: Pack @builder.io/qwik
-  #   if: ${{ github.event_name != 'workflow_dispatch' }}
-  #   run: |
-  #     cd dist-builder-io-qwik
-  #     mv `npm pack` ../builder.io-qwik.tgz
+      - name: Pack @builder.io/qwik
+        run: |
+          cd dist-dev/@builder.io-qwik
+          mv `npm pack` ../builder.io-qwik.tgz
 
-  # - name: Upload Qwik Package Artifact
-  #   if: ${{ github.event_name != 'workflow_dispatch' }}
-  #   uses: actions/upload-artifact@master
-  #   with:
-  #     name: Qwik NPM Package
-  #     path: builder.io-qwik.tgz
+      - name: Upload Qwik Package Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: builder-io-qwik@${{ github.event.inputs.version }}
+          path: dist-dev/builder.io-qwik.tgz
+
+      - name: Publish @builder.io/qwik
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: yarn build.publish.ci --set-version=${{ github.event.inputs.version }} --set-dist-tag=${{ github.event.inputs.disttag }}
 
   # lint:
   #   name: Lint
@@ -204,17 +218,17 @@ jobs:
   #         - host: macos-latest
   #           target: x86_64-apple-darwin
   #           build: |
-  #             yarn build.binding.ci --set-cargo-version=${{ github.event.inputs.version }}
+  #             yarn build.binding.ci --set-version=${{ github.event.inputs.version }}
   #             strip -x *.node
 
   #         - host: macos-latest
   #           target: aarch64-apple-darwin
   #           build: |
-  #             yarn build.binding.ci --target=aarch64-apple-darwin --set-cargo-version=${{ github.event.inputs.version }}
+  #             yarn build.binding.ci --target=aarch64-apple-darwin --set09p-[=] |-version=${{ github.event.inputs.version }}
   #             strip -x *.node
 
   #         - host: windows-latest
-  #           build: yarn build.binding.ci --set-cargo-version=${{ github.event.inputs.version }}
+  #           build: yarn build.binding.ci --set-version=${{ github.event.inputs.version }}
   #           target: x86_64-pc-windows-msvc
 
   #         # - host: ubuntu-latest

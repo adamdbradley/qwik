@@ -34,15 +34,13 @@ export interface BuildConfig {
 
   api?: boolean;
   build?: boolean;
-  commit?: boolean;
   dev?: boolean;
   jsx?: boolean;
-  platformBinding?: boolean;
   publish?: boolean;
+  platformBinding?: boolean;
+  setDistTag?: string;
   setVerison?: string;
   tsc?: boolean;
-  validate?: boolean;
-  validateDistTag?: string;
   watch?: boolean;
 }
 
@@ -62,7 +60,7 @@ export function loadConfig(args: string[] = []) {
   config.esmNode = parseInt(process.version.substr(1).split('.')[0], 10) >= 14;
   config.platformBinding = (config as any)['platform-binding'];
   config.setVerison = (config as any)['set-version'];
-  config.validateDistTag = (config as any)['validate-dist-tag'];
+  config.setDistTag = (config as any)['set-dist-tag'];
 
   return config;
 }
