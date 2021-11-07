@@ -40,13 +40,8 @@ jobs:
       - name: Install NPM Dependencies
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
 
-      - name: Prepare Dev Build
-        if: ${{ github.event_name != 'workflow_dispatch' }}
-        run: yarn build.ci
-
-      - name: Prepare Publish Build
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: yarn build.ci --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}"
+      - name: Build Package
+        run: yarn build.ci --set-version="${{ github.event.inputs.version }}"
 
       - name: Upload Package Build Artifacts
         uses: actions/upload-artifact@master
@@ -64,17 +59,17 @@ jobs:
           - host: macos-latest
             target: x86_64-apple-darwin
             build: |
-              yarn build.ci --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}"
+              yarn build.binding.ci --set-version="${{ github.event.inputs.version }}"
               strip -x *.node
 
           - host: macos-latest
             target: aarch64-apple-darwin
             build: |
-              yarn build.ci --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --target=aarch64-apple-darwin
+              yarn build.binding.ci --set-version="${{ github.event.inputs.version }}" --target=aarch64-apple-darwin
               strip -x *.node
 
           - host: windows-latest
-            build: yarn build.ci --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}"
+            build: yarn build.binding.ci --set-version="${{ github.event.inputs.version }}"
             target: x86_64-pc-windows-msvc
 
     name: Build ${{ matrix.settings.target }}
@@ -215,7 +210,7 @@ jobs:
 
       - name: Publish @builder.io/qwik
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: yarn build.publish.ci --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}"
+        run: yarn build.publish.ci --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --publish
 
   ############ LINT ############
   # lint:
