@@ -90,8 +90,8 @@ jobs:
       - name: Move Package Artifacts
         run: |
           mkdir dist-dev
-          mkdir dist-dev/@builder.io-qwik
-          mv dist-dev-builder-io-qwik dist-dev/@builder.io-qwik
+          mv dist-dev-builder-io-qwik @builder.io-qwik
+          mv @builder.io-qwik dist-dev/@builder.io-qwik
 
       # - name: Move Platform Bindings Artifacts
       #   run: |
