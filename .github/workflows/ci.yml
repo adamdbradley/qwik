@@ -130,8 +130,8 @@ jobs:
         if: ${{ matrix.settings.docker }}
 
       - name: Setup Toolchain
-        run: ${{ matrix.settings.setup }}
         if: ${{ matrix.settings.setup }}
+        run: ${{ matrix.settings.setup }}
         shell: bash
 
       - name: Install NPM Dependencies

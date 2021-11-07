@@ -31,15 +31,15 @@ export async function setVersion(config: BuildConfig) {
   updatedPkg.version = newVersion;
   await writePackageJson(config.rootDir, updatedPkg);
 
-  const cargoTomlTemplatePath = join(config.srcDir, 'napi', 'Cargo.toml.template');
-  const cargoTomlPath = join(config.srcDir, 'napi', 'Cargo.toml');
+  const cargoTomlTemplatePath = join(config.srcNapiDir, 'Cargo.toml.template');
+  const cargoTomlPath = join(config.srcNapiDir, 'Cargo.toml');
   const cargoTomlTemplate = await readFile(cargoTomlTemplatePath, 'utf-8');
   const cargoToml = cargoTomlTemplate.replace(`"0.0.0"`, `"${newVersion}"`);
   await writeFile(cargoTomlPath, cargoToml);
 
   config.setVerison = newVersion;
 
-  console.log(`🐡 version set to "${config.setVerison}"`);
+  console.log(`⬆️ version set to "${config.setVerison}"`);
 }
 
 async function checkExistingNpmVersion(newVersion: string) {
@@ -56,13 +56,11 @@ export async function publish(config: BuildConfig) {
     panic(`Invalid dist tag "${distTag}"`);
   }
 
-  const pkgJsonPath = join(config.distPkgDir, 'package.json');
-  const cargoTomlPath = join(config.srcDir, 'napi', 'Cargo.toml');
-  const rootPkg = await readPackageJson(config.rootDir);
-  const oldVersion = rootPkg.version;
-
   const newVersion = config.setVerison!;
   const gitTag = `v${newVersion}`;
+
+  const rootPkg = await readPackageJson(config.rootDir);
+  const oldVersion = rootPkg.version;
 
   if (semver.lte(newVersion, oldVersion)) {
     panic(`New version "${newVersion}" is less than or equal to current version "${oldVersion}"`);
@@ -72,18 +70,25 @@ export async function publish(config: BuildConfig) {
 
   await validateBuild(config);
 
-  await execa('git', ['add', pkgJsonPath]);
-  await execa('git', ['add', cargoTomlPath]);
-  await execa('git', ['commit', '-f', '-m', newVersion]);
-  await execa('git', ['tag', '-m', newVersion, gitTag]);
-  await execa('git', ['push', '--follow-tags']);
-  console.log(`🐠 commit version "${newVersion}" to git with tag "${gitTag}"`);
+  const pkgJsonPath = join(config.distPkgDir, 'package.json');
+  const cargoTomlPath = join(config.srcNapiDir, 'Cargo.toml');
+  const cargoLockPath = join(config.srcNapiDir, 'Cargo.lock');
+
+  // await execa('git', ['add', pkgJsonPath]);
+  // await execa('git', ['add', cargoTomlPath]);
+  // await execa('git', ['add', cargoLockPath]);
+  // await execa('git', ['commit', '-f', '-m', newVersion]);
+  // await execa('git', ['tag', '-m', newVersion, gitTag]);
+  // await execa('git', ['push', '--follow-tags']);
+  console.log(`🐠 commit version "${newVersion}" with git tag "${gitTag}"`);
 
   // await execa('npm', ['publish', '--dry-run'], { cwd: config.distPkgDir });
-  // console.log(`🐋 published @builder.io/qwik to npm`);
+  console.log(`🐋 published version "${newVersion}" of @builder.io/qwik to npm`);
 
   // await execa('npm', ['dist-tag', 'add', `@builder.io/qwik@${newVersion}`, distTag]);
-  // console.log(`🐳 set @builder.io/qwik "${distTag}" dist tag to "${newVersion}"`);
+  console.log(`🐳 set @builder.io/qwik "${distTag}" dist tag to "${newVersion}"`);
 
-  // console.log(`🐬 created github released`);
+  console.log(
+    `🐬 created github release "${gitTag}": https://github.com/BuilderIO/qwik/releases/tag/${gitTag}`
+  );
 }

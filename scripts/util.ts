@@ -26,6 +26,7 @@ import gzipSize from 'gzip-size';
 export interface BuildConfig {
   rootDir: string;
   distDir: string;
+  srcNapiDir: string;
   srcDir: string;
   scriptsDir: string;
   tscDir: string;
@@ -54,6 +55,7 @@ export function loadConfig(args: string[] = []) {
   config.rootDir = join(__dirname, '..');
   config.distDir = join(config.rootDir, 'dist-dev');
   config.srcDir = join(config.rootDir, 'src');
+  config.srcNapiDir = join(config.srcDir, 'napi');
   config.scriptsDir = join(config.rootDir, 'scripts');
   config.distPkgDir = join(config.distDir, '@builder.io-qwik');
   config.tscDir = join(config.distDir, 'tsc-out');

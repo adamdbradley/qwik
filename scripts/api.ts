@@ -34,6 +34,16 @@ function createTypesApi(
   const result = Extractor.invoke(extractorConfig, {
     localBuild: !!config.dev,
     showVerboseMessages: false,
+    messageCallback(msg) {
+      msg.handled = true;
+      if (msg.logLevel === 'verbose') {
+        return;
+      }
+      if (msg.text.includes('Analysis will use')) {
+        return;
+      }
+      console.log('🥶', msg.text);
+    },
   });
   if (!result.succeeded) {
     panic(
