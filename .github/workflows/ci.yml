@@ -136,7 +136,8 @@ jobs:
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
 
       - name: Set Cargo Version
-        run: node scripts --set-version="${{ github.event.inputs.version }}"
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: node ../../scripts --set-version="${{ github.event.inputs.version }}"
 
       - name: Build Binding
         run: ${{ matrix.settings.build }}
