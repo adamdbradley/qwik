@@ -19,12 +19,8 @@ export async function setVersion(config: BuildConfig) {
   const rootPkg = await readPackageJson(config.rootDir);
   const oldVersion = rootPkg.version;
 
-  if (semver.eq(newVersion, oldVersion)) {
-    return;
-  }
-
-  if (semver.lt(newVersion, oldVersion)) {
-    panic(`New version "${newVersion}" is less than current version "${oldVersion}"`);
+  if (semver.lte(newVersion, oldVersion)) {
+    panic(`New version "${newVersion}" is less than or equal to current version "${oldVersion}"`);
   }
 
   const npmVersionsCall = await execa('npm', ['view', rootPkg.name, 'versions', '--json']);
