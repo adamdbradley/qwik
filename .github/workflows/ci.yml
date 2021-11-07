@@ -71,7 +71,7 @@ jobs:
 
       - name: Build NodeJS WASM
         working-directory: ./src/wasm
-        run: wasm-pack build --target=nodejs --release --out-dir=dist-wasm-nodejs
+        run: wasm-pack build --target=nodejs --release --out-dir=../../dist-wasm
 
       - name: Print Output
         run: ls -R
@@ -79,8 +79,8 @@ jobs:
       - name: Upload NodeJS WASM Build Artifacts
         uses: actions/upload-artifact@master
         with:
-          name: dist-wasm-nodejs
-          path: dist-wasm-nodejs
+          name: qwik.nodejs.wasm
+          path: dist-wasm/qwik_wasm_bg.wasm
           if-no-files-found: error
 
   ############ BUILD WEB WASM ############
@@ -108,16 +108,16 @@ jobs:
 
       - name: Build Web WASM
         working-directory: ./src/wasm
-        run: wasm-pack build --target=web --release --out-dir=dist-wasm-web
+        run: wasm-pack build --target=web --release --out-dir=../../dist-wasm
 
       - name: Print Output
         run: ls -R
 
-      - name: Upload NodeJS WASM Build Artifacts
+      - name: Upload Web WASM Build Artifacts
         uses: actions/upload-artifact@master
         with:
-          name: dist-wasm-web
-          path: dist-wasm-web
+          name: qwik.web.wasm
+          path: dist-wasm/qwik_wasm_bg.wasm
           if-no-files-found: error
 
   ############ BUILD PLATFORM BINDINGS ############
