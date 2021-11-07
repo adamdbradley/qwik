@@ -33,7 +33,7 @@ function createTypesApi(
   );
   const result = Extractor.invoke(extractorConfig, {
     localBuild: !!config.dev,
-    showVerboseMessages: true,
+    showVerboseMessages: false,
   });
   if (!result.succeeded) {
     panic(
