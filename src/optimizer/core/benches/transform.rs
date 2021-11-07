@@ -45,10 +45,9 @@ fn transform_benchmark(b: &mut Criterion) {
                     path: "file.tsx".to_string(),
                 }],
                 source_maps: true,
-                minify: false,
+                minify: MinifyMode::None,
                 transpile: false,
-                print_ast: false,
-                entry_strategy: EntryStrategy::PerHook,
+                entry_strategy: EntryStrategy::Hook,
             }))
         })
     });

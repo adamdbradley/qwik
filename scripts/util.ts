@@ -35,13 +35,15 @@ export interface BuildConfig {
 
   api?: boolean;
   build?: boolean;
+  commit?: boolean;
   dev?: boolean;
   jsx?: boolean;
-  publish?: boolean;
   platformBinding?: boolean;
+  publish?: boolean;
   setDistTag?: string;
   setVerison?: string;
   tsc?: boolean;
+  wasm?: boolean;
   watch?: boolean;
 }
 

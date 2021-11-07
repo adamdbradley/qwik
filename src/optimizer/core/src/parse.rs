@@ -8,6 +8,8 @@ use crate::collector::global_collect;
 use crate::transform::{Hook, HookTransform, TransformContext};
 use crate::utils::{CodeHighlight, Diagnostic, DiagnosticSeverity, SourceLocation};
 use serde::{Deserialize, Serialize};
+
+#[cfg(feature = "fs")]
 use std::fs;
 
 use swc_common::comments::SingleThreadedComments;
@@ -26,7 +28,7 @@ use swc_ecmascript::transforms::{
     hygiene::{self, hygiene_with_config},
     resolver_with_mark,
 };
-use swc_ecmascript::transforms::{optimization::simplify::simplifier, pass, react, typescript};
+use swc_ecmascript::transforms::{optimization::simplify, pass, react, typescript};
 use swc_ecmascript::visit::FoldWith;
 
 #[derive(Debug, Serialize, Deserialize, Default)]
@@ -48,7 +50,7 @@ pub enum MinifyMode {
     None,
 }
 
-pub struct InternalConfig<'a> {
+pub struct TransformCodeOptions<'a> {
     pub root_dir: String,
     pub path: String,
     pub source_maps: bool,
@@ -71,11 +73,12 @@ pub struct TransformResult {
 }
 
 impl TransformResult {
+    #[cfg(feature = "fs")]
     pub fn write_to_fs(&self, destination: &str) -> Result<usize, Box<dyn std::error::Error>> {
         let destination = Path::new(destination);
         for module in &self.modules {
             let write_path = destination.join(&module.path);
-            std::fs::create_dir_all(&write_path.parent().unwrap())?;
+            fs::create_dir_all(&write_path.parent().unwrap())?;
             fs::write(write_path, &module.code)?;
         }
         Ok(self.modules.len())
@@ -110,8 +113,8 @@ impl Emitter for ErrorBuffer {
     }
 }
 
-pub fn transform_internal(
-    config: InternalConfig,
+pub fn transform_code(
+    config: TransformCodeOptions,
 ) -> Result<TransformResult, Box<dyn error::Error>> {
     let module = parse(config.code, config.path.as_str(), &config);
     if config.print_ast {
@@ -169,7 +172,7 @@ pub fn transform_internal(
                             config.minify != MinifyMode::None
                         ),
                         pass::Optional::new(
-                            simplifier(Default::default()),
+                            simplify::simplifier(Default::default()),
                             config.minify != MinifyMode::None
                         )
                     );
@@ -331,7 +334,7 @@ pub fn transform_internal(
 fn parse(
     code: &str,
     filename: &str,
-    config: &InternalConfig,
+    config: &TransformCodeOptions,
 ) -> PResult<(Module, SingleThreadedComments, bool, bool)> {
     let source_map = &config.context.source_map;
     let source_file = source_map.new_source_file(FileName::Real(filename.into()), code.into());

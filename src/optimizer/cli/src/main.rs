@@ -1,3 +1,7 @@
+#![deny(clippy::all)]
+#![deny(clippy::perf)]
+#![deny(clippy::nursery)]
+
 use clap::{App, AppSettings, Arg};
 use path_absolutize::*;
 use qwik_core::{transform_fs, EntryStrategy, MinifyMode, TransformFsOptions};
@@ -53,7 +57,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .arg(
                     Arg::new("strategy")
                     .long("strategy")
-                        .possible_values(["single", "hook", "component"])
+                        .possible_values(["single", "hook", "smart", "component"])
                         .takes_value(true)
                         .about("entry strategy used to group hooks"),
                 )
@@ -69,12 +73,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // You can check for the existence of subcommands, and if found use their
     // matches just as you would the top level app
-    if let Some(ref matches) = matches.subcommand_matches("optimize") {
+    if let Some(matches) = matches.subcommand_matches("optimize") {
         // "$ myapp test" was run
         let strategy = match matches.value_of("strategy") {
-            Some("hook") => EntryStrategy::PerHook,
+            Some("hook") => EntryStrategy::Hook,
             Some("single") => EntryStrategy::Single,
-            Some("component") | None => EntryStrategy::PerComponent,
+            Some("component") => EntryStrategy::Component,
+            Some("smart") | None => EntryStrategy::Smart,
             _ => panic!("Unvalid strategy option"),
         };
 
@@ -94,7 +99,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             sourcemaps: matches.is_present("sourcemaps"),
         })?;
     }
-    return Ok(());
+    Ok(())
 }
 
 fn optimize(t: Optimize) -> Result<qwik_core::TransformResult, Box<dyn std::error::Error>> {
@@ -122,5 +127,5 @@ fn optimize(t: Optimize) -> Result<qwik_core::TransformResult, Box<dyn std::erro
     // dbg!(&result);
 
     result.write_to_fs(&output)?;
-    return Ok(result);
+    Ok(result)
 }

@@ -17,7 +17,7 @@ const Header = qComponent({
   })
 });
     "#,
-        EntryStrategy::PerHook,
+        EntryStrategy::Hook,
         false,
     );
 }
@@ -36,7 +36,7 @@ export const Header = qComponent({
   })
 });
     "#,
-        EntryStrategy::PerHook,
+        EntryStrategy::Hook,
         false,
     );
 }
@@ -58,7 +58,7 @@ export const App = () => {
     return Header;
 });
     "#,
-        EntryStrategy::PerHook,
+        EntryStrategy::Hook,
         false,
     );
 }
@@ -80,7 +80,7 @@ export function App() {
     return Header;
 }
     "#,
-        EntryStrategy::PerHook,
+        EntryStrategy::Hook,
         false,
     );
 }
@@ -101,7 +101,7 @@ export const Header = qComponent({
     })
 });
     "#,
-        EntryStrategy::PerHook,
+        EntryStrategy::Hook,
         false,
     );
 }
@@ -113,7 +113,7 @@ fn example_6() {
         r#"
 export const sym1 = qHook((ctx) => console.log("1"));
     "#,
-        EntryStrategy::PerHook,
+        EntryStrategy::Hook,
         false,
     );
 }
@@ -142,7 +142,7 @@ const App = qComponent({
         );
     })
 });"#,
-        EntryStrategy::PerHook,
+        EntryStrategy::Hook,
         false,
     );
 }
@@ -165,7 +165,7 @@ const Header = qComponent({
     })
   });
 "#,
-        EntryStrategy::PerHook,
+        EntryStrategy::Hook,
         false,
     );
 }
@@ -187,7 +187,7 @@ const Header = qHook((decl1, {decl2}, [decl3]) => {
     try{}catch({decl19}){}
 });
     "#,
-        EntryStrategy::PerHook,
+        EntryStrategy::Hook,
         false,
     );
 }
@@ -216,7 +216,7 @@ const Header = qHook((decl1, {decl2}, [decl3]) => {
     )
 });
     "#,
-        EntryStrategy::PerHook,
+        EntryStrategy::Hook,
         false,
     );
 }
@@ -282,7 +282,7 @@ export const App = qComponent({
 //     }
 // }
 
-fn test_input(filename: &str, code: &str, entry_strategy: EntryStrategy, print_ast: bool) {
+fn test_input(filename: &str, code: &str, entry_strategy: EntryStrategy, _print_ast: bool) {
     let res = transform_modules(&TransformModulesOptions {
         root_dir: "/user/qwik/src/".to_string(),
         input: vec![TransformModuleInput {
@@ -292,7 +292,6 @@ fn test_input(filename: &str, code: &str, entry_strategy: EntryStrategy, print_a
         source_maps: true,
         minify: MinifyMode::Simplify,
         transpile: false,
-        print_ast,
         entry_strategy,
     });
     match res {

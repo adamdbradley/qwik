@@ -114,7 +114,12 @@ export type DiagnosticType = 'error' | 'warn' | 'info';
 /**
  * @alpha
  */
-export type EntryStrategy = SingleEntryStrategy | PerHookEntryStrategy | ManualEntryStrategy;
+export type EntryStrategy =
+  | SingleEntryStrategy
+  | HookEntryStrategy
+  | ComponentEntryStrategy
+  | SmartEntryStrategy
+  | ManualEntryStrategy;
 
 /**
  * @alpha
@@ -125,21 +130,35 @@ export type MinifyMode = 'minify' | 'simplify' | 'none';
  * @alpha
  */
 export interface SingleEntryStrategy {
-  type: 'Single';
+  type: 'single';
 }
 
 /**
  * @alpha
  */
-export interface PerHookEntryStrategy {
-  type: 'PerHook';
+export interface HookEntryStrategy {
+  type: 'hook';
+}
+
+/**
+ * @alpha
+ */
+export interface ComponentEntryStrategy {
+  type: 'component';
+}
+
+/**
+ * @alpha
+ */
+export interface SmartEntryStrategy {
+  type: 'smart';
 }
 
 /**
  * @alpha
  */
 export interface ManualEntryStrategy {
-  type: 'Manual';
+  type: 'manual';
   entries: string[][];
 }
 

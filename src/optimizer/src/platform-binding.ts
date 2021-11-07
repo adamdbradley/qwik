@@ -1,7 +1,7 @@
 import { platformArchTriples } from '@napi-rs/triples';
 import type { TransformResult } from '.';
 
-export function loadPlatformBinding() {
+export async function loadPlatformBinding() {
   if (loadedBinding) {
     return loadedBinding;
   }
@@ -29,23 +29,28 @@ export function loadPlatformBinding() {
           return loadedBinding!;
         }
       }
-    }
 
-    // NodeJS WASM
-    // TODO
+      const wasmBindingPath = path.join(`..`, `wasm-nodejs`);
+      loadedBinding = require(wasmBindingPath);
+      return loadedBinding!;
+    }
   }
 
   if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-    // Browser WASM
-    // TODO
+    // @ts-ignore
+    const module = await import('../wasm-web/qwik_wasm.js');
+    await module.default();
+    loadedBinding = {
+      transform_modules: module.transform_modules,
+    };
   }
 
   throw new Error(`Platform not supported`);
 }
 
 export interface PlatformBinding {
-  transformFs: (opts: any) => TransformResult;
-  transformModules: (opts: any) => TransformResult;
+  transform_fs?: (opts: any) => TransformResult;
+  transform_modules: (opts: any) => TransformResult;
 }
 
 let loadedBinding: PlatformBinding | null = null;
