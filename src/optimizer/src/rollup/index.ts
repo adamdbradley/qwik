@@ -20,12 +20,12 @@ export function qwikRollup(opts: QwikPluginOptions = {}): Plugin {
         entryStrategy: opts.entryStrategy,
         glob: opts.glob,
         minify: opts.minify,
-        transpile: opts.transpile
+        transpile: opts.transpile,
       };
 
-      console.time("Qwik optimize");
+      console.time('Qwik optimize');
       const result = await optimizer.transformFs(transformOpts);
-      console.timeEnd("Qwik optimize");
+      console.timeEnd('Qwik optimize');
 
       // throw error or print logs if there are any diagnostics
       result.diagnostics.forEach((d) => {
@@ -44,7 +44,7 @@ export function qwikRollup(opts: QwikPluginOptions = {}): Plugin {
         id = path.resolve(path.dirname(importer), id);
       }
       if (optimizer.hasTransformedModule(id)) {
-        return id
+        return id;
       }
       return null;
     },
@@ -100,7 +100,7 @@ function findInputDirectory(rollupInput: InputOption | undefined) {
     }
   }
 
-  inputFilePaths = inputFilePaths.map(p => path.resolve(p));
+  inputFilePaths = inputFilePaths.map((p) => path.resolve(p));
   if (inputFilePaths.length === 0) {
     throw new Error(`Valid absolute input path required`);
   }

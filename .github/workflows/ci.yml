@@ -137,10 +137,6 @@ jobs:
       - name: Install NPM Dependencies
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
 
-      - name: Set Cargo Version
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: node ../../scripts --set-version="${{ github.event.inputs.version }}"
-
       - name: Build Binding
         run: ${{ matrix.settings.build }}
         shell: bash
@@ -205,6 +201,7 @@ jobs:
           path: dist-dev/builder.io-qwik.tgz
 
       - name: Cache NPM Dependencies
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         uses: actions/cache@v2
         with:
           path: node_modules
@@ -212,6 +209,7 @@ jobs:
           restore-keys: npm-cache-ubuntu-
 
       - name: Install NPM Dependencies
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
 
       - name: Publish @builder.io/qwik

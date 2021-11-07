@@ -31,12 +31,6 @@ export async function setVersion(config: BuildConfig) {
   updatedPkg.version = newVersion;
   await writePackageJson(config.rootDir, updatedPkg);
 
-  const cargoTomlTemplatePath = join(config.srcNapiDir, 'Cargo.toml.template');
-  const cargoTomlPath = join(config.srcNapiDir, 'Cargo.toml');
-  const cargoTomlTemplate = await readFile(cargoTomlTemplatePath, 'utf-8');
-  const cargoToml = cargoTomlTemplate.replace(`"0.0.0"`, `"${newVersion}"`);
-  await writeFile(cargoTomlPath, cargoToml);
-
   config.setVerison = newVersion;
 
   console.log(`⬆️ version set to "${config.setVerison}"`);
@@ -71,12 +65,8 @@ export async function publish(config: BuildConfig) {
   await validateBuild(config);
 
   const pkgJsonPath = join(config.distPkgDir, 'package.json');
-  const cargoTomlPath = join(config.srcNapiDir, 'Cargo.toml');
-  const cargoLockPath = join(config.srcNapiDir, 'Cargo.lock');
 
   // await execa('git', ['add', pkgJsonPath]);
-  // await execa('git', ['add', cargoTomlPath]);
-  // await execa('git', ['add', cargoLockPath]);
   // await execa('git', ['commit', '-f', '-m', newVersion]);
   // await execa('git', ['tag', '-m', newVersion, gitTag]);
   // await execa('git', ['push', '--follow-tags']);

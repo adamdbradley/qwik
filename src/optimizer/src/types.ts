@@ -119,7 +119,7 @@ export type EntryStrategy = SingleEntryStrategy | PerHookEntryStrategy | ManualE
 /**
  * @alpha
  */
- export type MinifyMode = 'minify' | 'simplify' | 'none';
+export type MinifyMode = 'minify' | 'simplify' | 'none';
 
 /**
  * @alpha

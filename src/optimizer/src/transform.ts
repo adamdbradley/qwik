@@ -1,7 +1,4 @@
-import type {
-  TransformModulesOptions,
-  TransformFsOptions,
-} from '.';
+import type { TransformModulesOptions, TransformFsOptions } from '.';
 import { loadPlatformBinding } from './platform-binding';
 
 /**
@@ -31,7 +28,7 @@ export async function transformFs(opts: TransformFsOptions) {
 /**
  * Transforms the file read from the file system.
  */
- export function transformFsSync(opts: TransformFsOptions) {
+export function transformFsSync(opts: TransformFsOptions) {
   const binding = loadPlatformBinding();
   return binding.transformFs(convertOptions(opts));
 }

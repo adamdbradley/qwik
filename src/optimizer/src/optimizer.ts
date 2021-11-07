@@ -40,8 +40,8 @@ export class Optimizer {
     this[LastDirectoryResult] = result;
 
     result.modules.forEach((output) => {
-      const path = (output.path.split('.').slice(0, -1)).join('.')
-      const key = result.rootDir + "/" + path;
+      const path = output.path.split('.').slice(0, -1).join('.');
+      const key = result.rootDir + '/' + path;
       this[TransformedOutputs].set(key, output);
     });
 
@@ -60,8 +60,8 @@ export class Optimizer {
     this[LastDirectoryResult] = result;
 
     result.modules.forEach((output) => {
-      const path = (output.path.split('.').slice(0, -1)).join('.')
-      const key = result.rootDir + "/" + path;
+      const path = output.path.split('.').slice(0, -1).join('.');
+      const key = result.rootDir + '/' + path;
       this[TransformedOutputs].set(key, output);
     });
 
@@ -72,7 +72,6 @@ export class Optimizer {
     path = path.replace(/\.(j|t)sx?$/, '');
     return this[TransformedOutputs].get(path);
   }
-
 
   hasTransformedModule(path: string) {
     return this[TransformedOutputs].has(path);
