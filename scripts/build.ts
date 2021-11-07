@@ -6,7 +6,7 @@ import { copyFiles } from './copy-files';
 import { emptyDir } from './util';
 import { generateJsxTypes } from './jsx-types';
 import { generatePackageJson } from './package-json';
-import { setVersion } from './release';
+import { setVersion } from './version';
 import { submoduleCore } from './submodule-core';
 import { submoduleJsxRuntime } from './submodule-jsx-runtime';
 import { submoduleOptimizer } from './submodule-optimizer';
@@ -28,7 +28,7 @@ export async function build(config: BuildConfig) {
   try {
     console.log(`🌎 Qwik (nodejs ${process.version})`);
 
-    // await setVersion(config);
+    await setVersion(config);
 
     if (config.tsc) {
       tsc(config);

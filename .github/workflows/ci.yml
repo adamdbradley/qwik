@@ -45,15 +45,15 @@ jobs:
       - name: Upload Package Build Artifacts
         uses: actions/upload-artifact@master
         with:
-          name: dist-builder-io-qwik
-          path: dist-dev/@builder.io-qwik/
+          name: dist-dev/@builder.io-qwik
+          path: dist-dev/@builder.io-qwik
           if-no-files-found: error
 
       - name: Upload Build Scripts
         uses: actions/upload-artifact@master
         with:
-          name: scripts
-          path: dist-dev/tsc-out/scripts/*.js
+          name: dist-dev/scripts
+          path: dist-dev/tsc-out/scripts/**/*.js
           if-no-files-found: error
 
   release:
@@ -75,6 +75,9 @@ jobs:
 
       - name: Print Build Artifacts
         run: ls -R
+
+      # - name: asdf
+      #   run: node dist-dev/scripts/release.js
 
       # - name: Publish @builder.io/qwik
       #   if: ${{ github.event_name == 'workflow_dispatch' }}
