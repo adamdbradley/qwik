@@ -224,7 +224,7 @@ jobs:
 
       - name: Publish @builder.io/qwik
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: node yarn build.publish.ci --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}"
+        run: yarn build.publish.ci --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}"
 
   ############ LINT ############
   # lint:

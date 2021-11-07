@@ -58,6 +58,13 @@ export async function publish(config: BuildConfig) {
   const pkgJsonPath = join(config.distPkgDir, 'package.json');
   const cargoTomlPath = join(config.srcDir, 'napi', 'Cargo.toml');
 
+  const rootPkg = await readPackageJson(config.rootDir);
+  const oldVersion = rootPkg.version;
+
+  if (semver.eq(newVersion, oldVersion)) {
+    panic(`New version "${newVersion}" is the same as the current version`);
+  }
+
   await execa('git', ['add', pkgJsonPath]);
   await execa('git', ['add', cargoTomlPath]);
   await execa('git', ['commit', '-f', '-m', newVersion]);
