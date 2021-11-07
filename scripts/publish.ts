@@ -7,7 +7,7 @@ import { validateBuild } from './validate-build';
 
 export async function setVersion(config: BuildConfig) {
   if (
-    (typeof config.setVerison !== 'string' && typeof config.setVerison !== 'boolean') ||
+    (typeof config.setVerison !== 'string' && typeof config.setVerison !== 'number') ||
     String(config.setVerison) === ''
   ) {
     return;
