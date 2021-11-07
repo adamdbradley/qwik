@@ -41,7 +41,7 @@ jobs:
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
 
       - name: Build Package
-        run: yarn build.ci --set-version="${{ github.event.inputs.version }}"
+        run: node scripts --tsc --build --api --set-version="${{ github.event.inputs.version }}"
 
       - name: Upload Package Build Artifacts
         uses: actions/upload-artifact@master
@@ -59,17 +59,17 @@ jobs:
           - host: macos-latest
             target: x86_64-apple-darwin
             build: |
-              yarn build.binding.ci --set-version="${{ github.event.inputs.version }}"
+              napi build --platform --release --config=napi.config.json
               strip -x *.node
 
           - host: macos-latest
             target: aarch64-apple-darwin
             build: |
-              yarn build.binding.ci --set-version="${{ github.event.inputs.version }}" --target=aarch64-apple-darwin
+              napi build --platform --release --config=napi.config.json --target=aarch64-apple-darwin
               strip -x *.node
 
           - host: windows-latest
-            build: yarn build.binding.ci --set-version="${{ github.event.inputs.version }}"
+            build: napi build --platform --release --config=napi.config.json
             target: x86_64-pc-windows-msvc
 
     name: Build ${{ matrix.settings.target }}
@@ -134,6 +134,9 @@ jobs:
 
       - name: Install NPM Dependencies
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+
+      - name: Set Cargo Version
+        run: node scripts --set-version="${{ github.event.inputs.version }}"
 
       - name: Build Binding
         run: ${{ matrix.settings.build }}
@@ -210,7 +213,7 @@ jobs:
 
       - name: Publish @builder.io/qwik
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: yarn build.publish.ci --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --publish
+        run: node scripts --publish --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --publish
 
   ############ LINT ############
   # lint:
