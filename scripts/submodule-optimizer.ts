@@ -35,6 +35,9 @@ export async function submoduleOptimizer(config: BuildConfig) {
       ...opts,
       format: 'esm',
       outExtension: { '.js': '.mjs' },
+      define: {
+        'globalThis.MODULE_EXT': `"mjs"`,
+      },
       watch: watcher(config, submodule),
     });
 
@@ -42,6 +45,9 @@ export async function submoduleOptimizer(config: BuildConfig) {
       ...opts,
       format: 'cjs',
       outExtension: { '.js': '.cjs' },
+      define: {
+        'globalThis.MODULE_EXT': `"cjs"`,
+      },
       watch: watcher(config),
       platform: 'node',
       target: nodeTarget,

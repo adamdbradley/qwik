@@ -218,6 +218,8 @@ jobs:
       - name: Build Binding
         run: ${{ matrix.settings.build }}
         shell: bash
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Upload Binding Artifact
         uses: actions/upload-artifact@v2
