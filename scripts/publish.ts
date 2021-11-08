@@ -64,6 +64,14 @@ export async function publish(config: BuildConfig) {
 
   await validateBuild(config);
 
+  const distChangelogPage = join(config.distDir, 'CHANGELOG.md');
+  await execa('conventional-changelog -p angular -i dist-dev/CHANGELOG.md -s', [
+    '-p',
+    'angular',
+    '-i',
+    distChangelogPage,
+  ]);
+
   const pkgJsonPath = join(config.distPkgDir, 'package.json');
 
   const gitAddArgs = ['add', pkgJsonPath];
