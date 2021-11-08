@@ -293,7 +293,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && success() }}
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ GITHUB_RELEASE_TAG_NAME }}
+          tag_name: 'v${{ github.event.inputs.version }}'
           files: dist-dev/CHANGELOG.md
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -112,8 +112,6 @@ export async function publish(config: BuildConfig) {
       dryRun ? ` (dry-run)` : ``
     }`
   );
-
-  process.env.GITHUB_RELEASE_TAG_NAME = gitTag;
 }
 
 async function checkExistingNpmVersion(newVersion: string) {
