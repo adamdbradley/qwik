@@ -40,9 +40,6 @@ export async function validateBuild(config: BuildConfig) {
         case '.map':
           JSON.parse(readFileSync(filePath, 'utf-8'));
           break;
-        case '.node':
-          // platform bindings only created in CI
-          break;
         default:
           const content = readFileSync(filePath, 'utf-8');
           if (content.trim() === '') {

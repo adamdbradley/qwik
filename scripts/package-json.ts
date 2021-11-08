@@ -104,8 +104,6 @@ const PACKAGE_FILES = [
   'optimizer/index.cjs',
   'optimizer/index.mjs',
   'optimizer/index.d.ts',
-  'optimizer/rollup.cjs',
-  'optimizer/rollup.mjs',
 
   // prefetch
   'prefetch.js',
