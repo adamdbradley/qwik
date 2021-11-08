@@ -4,7 +4,6 @@ import semver from 'semver';
 import execa from 'execa';
 import { join } from 'path';
 import { validateBuild } from './validate-build';
-import { Octokit } from '@octokit/rest';
 
 export async function setVersion(config: BuildConfig) {
   if (
