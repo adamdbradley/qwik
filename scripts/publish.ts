@@ -112,22 +112,6 @@ export async function publish(config: BuildConfig) {
       dryRun ? ` (dry-run)` : ``
     }`
   );
-
-  await createChangelog(config, newVersion, gitTag);
-}
-
-async function createChangelog(config: BuildConfig, newVersion: string, gitTag: string) {
-  const changelogPath = join(config.distDir, 'CHANGELOG.md');
-
-  const c: string[] = [];
-  c.push(newVersion);
-
-  console.log(`🤓 CHANGELOG.md, git tag: ${gitTag}`);
-  console.log(`---------------`);
-  console.log(c.join('\n'));
-  console.log(`---------------`);
-
-  await writeFile(changelogPath, c.join('\n'));
 }
 
 async function checkExistingNpmVersion(newVersion: string) {

@@ -245,31 +245,31 @@ jobs:
       - name: Download Build Artifacts
         uses: actions/download-artifact@v2
 
+      - name: Create dist-dev directory
+        run: mkdir dist-dev
+
       - name: Print Package Build Artifacts
         run: ls -R dist-dev-builder-io-qwik
-
-      - name: Print WASM Build Artifacts
-        run: ls *.wasm
-
-      - name: Print Platform Build Artifacts
-        run: ls -R *.node
-
-      - name: Create dist-dev directory
-        run: |
-          mkdir dist-dev
 
       - name: Move Package Artifacts
         run: |
           mv dist-dev-builder-io-qwik dist-dev
           mv dist-dev/dist-dev-builder-io-qwik dist-dev/@builder.io-qwik
 
+      - name: Print WASM Build Artifacts
+        run: ls dist-wasm-*/*.wasm
+
       - name: Move WASM Artifacts
-        run: |
-          mv dist-wasm-*/*.wasm dist-dev/@builder.io-qwik
+        run: mv dist-wasm-*/*.wasm dist-dev/@builder.io-qwik
+
+      - name: Print Platform Build Artifacts
+        run: ls -R dist-platform-*/*.node
 
       - name: Move Platform Binding Artifacts
-        run: |
-          mv dist-platform-*/*.node dist-dev/@builder.io-qwik
+        run: mv dist-platform-*/*.node dist-dev/@builder.io-qwik
+
+      - name: Create Changelog
+        run: yarn changelog
 
       - name: Cache NPM Dependencies
         uses: actions/cache@v2
@@ -288,6 +288,16 @@ jobs:
       - name: Publish @builder.io/qwik
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: node scripts --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --publish
+
+      - name: Create Github Release
+        if: ${{ github.event_name == 'workflow_dispatch' && success() }}
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.tag-release.outputs.tag_name }}
+          with:
+            files: dist-dev/CHANGELOG.md
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Qwik Package Artifact
         uses: actions/upload-artifact@master
