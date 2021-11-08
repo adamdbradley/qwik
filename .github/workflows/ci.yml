@@ -73,7 +73,7 @@ jobs:
 
       - name: Build NodeJS WASM
         working-directory: ./src/wasm
-        run: wasm-pack build --target=nodejs --release --out-dir=../../dist-wasm
+        run: wasm-pack build --target=nodejs --release --out-dir=../../dist-wasm --out-name=qwik.nodejs.wasm
 
       - name: Print Output
         run: ls -R
@@ -81,8 +81,8 @@ jobs:
       - name: Upload NodeJS WASM Build Artifacts
         uses: actions/upload-artifact@master
         with:
-          name: qwik.nodejs.wasm
-          path: dist-wasm/qwik_wasm_bg.wasm
+          name: dist-wasm-nodejs
+          path: dist-wasm/*.wasm
           if-no-files-found: error
 
   ############ BUILD WEB WASM ############
@@ -111,7 +111,7 @@ jobs:
 
       - name: Build Web WASM
         working-directory: ./src/wasm
-        run: wasm-pack build --target=web --release --out-dir=../../dist-wasm
+        run: wasm-pack build --target=web --release --out-dir=../../dist-wasm --out-name=qwik.web.wasm
 
       - name: Print Output
         run: ls -R
@@ -119,8 +119,8 @@ jobs:
       - name: Upload Web WASM Build Artifacts
         uses: actions/upload-artifact@master
         with:
-          name: qwik.web.wasm
-          path: dist-wasm/qwik_wasm_bg.wasm
+          name: dist-wasm-web
+          path: dist-wasm/*.wasm
           if-no-files-found: error
 
   ############ BUILD PLATFORM BINDINGS ############
@@ -218,7 +218,7 @@ jobs:
       - name: Upload Binding Artifact
         uses: actions/upload-artifact@v2
         with:
-          name: qwik.${{ matrix.settings.target }}.node
+          name: dist-platform-${{ matrix.settings.target }}
           path: src/napi/*.node
 
   ############ RELEASE ############
@@ -265,22 +265,11 @@ jobs:
 
       - name: Move WASM Artifacts
         run: |
-          mv *.wasm dist-dev/@builder.io-qwik
+          mv dist-wasm-*/*.wasm dist-dev/@builder.io-qwik
 
       - name: Move Platform Binding Artifacts
         run: |
-          mv *.node dist-dev/@builder.io-qwik
-
-      - name: Pack @builder.io/qwik
-        run: |
-          cd dist-dev/@builder.io-qwik
-          mv `npm pack` ../builder.io-qwik.tgz
-
-      - name: Upload Qwik Package Artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: builder-io-qwik
-          path: dist-dev/builder.io-qwik.tgz
+          mv dist-platform-*/*.node dist-dev/@builder.io-qwik
 
       - name: Cache NPM Dependencies
         uses: actions/cache@v2
@@ -299,6 +288,18 @@ jobs:
       - name: Publish @builder.io/qwik
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: node scripts --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --publish
+
+      - name: Upload Qwik Package Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: builder-io-qwik
+          path: dist-dev/builder.io-qwik.tgz
+
+      - name: Upload Changelog Artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: Changelog
+          path: dist-dev/CHANGELOG.md
 
   ############ LINT ############
   # lint:

@@ -1,9 +1,10 @@
 import { readPackageJson, writePackageJson } from './package-json';
-import { BuildConfig, panic } from './util';
+import { BuildConfig, panic, writeFile } from './util';
 import semver from 'semver';
 import execa from 'execa';
 import { join } from 'path';
 import { validateBuild } from './validate-build';
+import { Octokit } from '@octokit/rest';
 
 export async function setVersion(config: BuildConfig) {
   if (
@@ -49,6 +50,9 @@ export async function publish(config: BuildConfig) {
   } else {
     console.log(`🚢 publishing`);
   }
+
+  const distPkgTarPath = join(config.distDir, 'builder.io-qwik.tgz');
+  await execa('npm', ['pack', distPkgTarPath]);
 
   const rootPkg = await readPackageJson(config.rootDir);
   const distTag = dryRun ? 'dryrun' : String(config.setDistTag);
@@ -97,14 +101,7 @@ export async function publish(config: BuildConfig) {
     `🐳 commit version "${newVersion}" with git tag "${gitTag}"${dryRun ? ` (dry-run)` : ``}`
   );
 
-  const npmPublishArgs = [
-    'publish',
-    'dist-dev/builder.io-qwik.tgz',
-    '--tag',
-    distTag,
-    '--access',
-    'public',
-  ];
+  const npmPublishArgs = ['publish', distPkgTarPath, '--tag', distTag, '--access', 'public'];
 
   if (dryRun) {
     npmPublishArgs.push('--dry-run');
@@ -117,18 +114,21 @@ export async function publish(config: BuildConfig) {
     }`
   );
 
-  await createGithubRelease(config, dryRun, newVersion, gitTag);
+  await createChangelog(config, newVersion, gitTag);
 }
 
-async function createGithubRelease(
-  config: BuildConfig,
-  dryRun: boolean,
-  newVersion: string,
-  gitTag: string
-) {
-  const releaseUrl = `https://github.com/BuilderIO/qwik/releases/tag/${gitTag}`;
+async function createChangelog(config: BuildConfig, newVersion: string, gitTag: string) {
+  const changelogPath = join(config.distDir, 'CHANGELOG.md');
 
-  console.log(`🐬 created github release "${gitTag}"${dryRun ? ` (dry-run)` : ``}: ${releaseUrl}`);
+  const c: string[] = [];
+  c.push(newVersion);
+
+  console.log(`🤓 CHANGELOG.md, git tag: ${gitTag}`);
+  console.log(`---------------`);
+  console.log(c.join('\n'));
+  console.log(`---------------`);
+
+  await writeFile(changelogPath, c.join('\n'));
 }
 
 async function checkExistingNpmVersion(newVersion: string) {
