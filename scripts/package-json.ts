@@ -29,12 +29,12 @@ export async function generatePackageJson(config: BuildConfig) {
         require: './core.cjs',
       },
       './jsx-runtime': {
-        import: './jsx-runtime/index.mjs',
-        require: './jsx-runtime/index.cjs',
+        import: './jsx-runtime.mjs',
+        require: './jsx-runtime.cjs',
       },
       './optimizer': {
-        import: './optimizer/index.mjs',
-        require: './optimizer/index.cjs',
+        import: './optimizer.mjs',
+        require: './optimizer.cjs',
       },
       './server': {
         import: './server/index.mjs',
@@ -90,16 +90,16 @@ const PACKAGE_FILES = [
   'core.d.ts',
 
   // jsx-runtime
-  'jsx-runtime/index.cjs',
-  'jsx-runtime/index.cjs.map',
-  'jsx-runtime/index.mjs',
-  'jsx-runtime/index.mjs.map',
-  'jsx-runtime/index.d.ts',
+  'jsx-runtime.cjs',
+  'jsx-runtime.cjs.map',
+  'jsx-runtime.mjs',
+  'jsx-runtime.mjs.map',
+  'jsx-runtime.d.ts',
 
   // optimizer
-  'optimizer/index.cjs',
-  'optimizer/index.mjs',
-  'optimizer/index.d.ts',
+  'optimizer.cjs',
+  'optimizer.mjs',
+  'optimizer.d.ts',
 
   // prefetch
   'prefetch.js',
@@ -134,8 +134,8 @@ const PACKAGE_FILES = [
   'qwik.win32-x64-msvc.node',
 
   // wasm
-  'qwik.nodejs.wasm.js',
-  'qwik.nodejs.wasm_bg.wasm',
-  'qwik.web.wasm.js',
-  'qwik.web.wasm_bg.wasm',
+  'qwik.nodejs.js',
+  'qwik.nodejs.wasm',
+  'qwik.web.js',
+  'qwik.web.wasm',
 ];
