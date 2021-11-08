@@ -134,8 +134,12 @@ const PACKAGE_FILES = [
   'LICENSE',
   'package.json',
 
-  // platform bindings (only found in CI build)
-  'qwik.darwin-arm64.node',
+  // platform bindings
   'qwik.darwin-x64.node',
+  // 'qwik.darwin-arm64.node',
   'qwik.win32-x64-msvc.node',
+
+  // wasm
+  'qwik.nodejs.wasm',
+  'qwik.web.wasm',
 ];
