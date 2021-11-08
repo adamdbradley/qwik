@@ -66,45 +66,32 @@ export async function publish(config: BuildConfig) {
   await validateBuild(config);
 
   const distChangelogPage = join(config.distDir, 'CHANGELOG.md');
-  await execa('conventional-changelog -p angular -i dist-dev/CHANGELOG.md -s', [
-    '-p',
-    'angular',
-    '-i',
-    distChangelogPage,
-  ]);
+  await execa('conventional-changelog', ['-p', 'angular', '-i', distChangelogPage]);
 
   const pkgJsonPath = join(config.distPkgDir, 'package.json');
-
   const gitAddArgs = ['add', pkgJsonPath];
   if (dryRun) {
     gitAddArgs.push('--dry-run');
-    console.log(`  git ${gitAddArgs.join(' ')}`);
   }
-  // await execa('git', gitAddArgs);
+  await execa('git', gitAddArgs);
 
   const gitCommitTitle = `"${newVersion}"`;
   const gitCommitBody = `"skip ci"`;
   const gitCommitArgs = ['commit', '-m', gitCommitTitle, '-m', gitCommitBody];
   if (dryRun) {
     gitCommitArgs.push('--dry-run');
-    console.log(`  git ${gitCommitArgs.join(' ')}`);
   }
-  // await execa('git', gitCommitArgs);
+  await execa('git', gitCommitArgs);
 
   const gitTagArgs = ['tag', '-f', '-m', newVersion, gitTag];
-  if (dryRun) {
-    console.log(`  git ${gitTagArgs.join(' ')}`);
-  } else {
-    // no --dry-run flag for git tag
-    // await execa('git', gitTagArgs);
-  }
+  // no --dry-run flag for git tag
+  await execa('git', gitTagArgs);
 
   const gitPushArgs = ['push', '--follow-tags'];
   if (dryRun) {
     gitPushArgs.push('--dry-run');
-    console.log(`  git ${gitPushArgs.join(' ')}`);
   }
-  // await execa('git', gitCommitArgs);
+  await execa('git', gitPushArgs);
   console.log(
     `🐳 commit version "${newVersion}" with git tag "${gitTag}"${dryRun ? ` (dry-run)` : ``}`
   );
@@ -112,7 +99,6 @@ export async function publish(config: BuildConfig) {
   const npmPublishArgs = ['publish', '--tag', distTag, '--access', 'public'];
   if (dryRun) {
     npmPublishArgs.push('--dry-run');
-    console.log(`  npm ${npmPublishArgs.join(' ')}`);
   }
   // await execa('npm', npmPublishArgs, { cwd: config.distPkgDir });
   console.log(
