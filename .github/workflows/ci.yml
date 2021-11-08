@@ -300,12 +300,14 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Qwik Package Artifact
+        if: ${{ always() }}
         uses: actions/upload-artifact@master
         with:
           name: builder-io-qwik
           path: dist-dev/*.tgz
 
       - name: Upload Changelog Artifact
+        if: ${{ always() }}
         uses: actions/upload-artifact@master
         with:
           name: Changelog
