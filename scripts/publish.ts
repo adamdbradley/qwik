@@ -36,18 +36,16 @@ export async function setVersion(config: BuildConfig) {
   console.log(`⬆️ version set to "${config.setVerison}"`);
 }
 
-async function checkExistingNpmVersion(newVersion: string) {
-  const npmVersionsCall = await execa('npm', ['view', '@builder.io/qwik', 'versions', '--json']);
-  const publishedVersions: string[] = JSON.parse(npmVersionsCall.stdout);
-  if (publishedVersions.includes(newVersion)) {
-    panic(`Version "${newVersion}" of @builder.io/qwik is already published to npm`);
-  }
-}
-
 export async function publish(config: BuildConfig) {
+  if (config.dryRun) {
+    console.log(`⛴ publishing (dry-run)`);
+  } else {
+    console.log(`🚢 publishing`);
+  }
+
   const distTag = String(config.setDistTag);
-  if (distTag == '') {
-    panic(`Invalid dist tag "${distTag}"`);
+  if (distTag == '' && !config.dryRun) {
+    panic(`Invalid npm dist tag "${distTag}"`);
   }
 
   const newVersion = config.setVerison!;
@@ -56,7 +54,7 @@ export async function publish(config: BuildConfig) {
   const rootPkg = await readPackageJson(config.rootDir);
   const oldVersion = rootPkg.version;
 
-  if (semver.lte(newVersion, oldVersion)) {
+  if (semver.lte(newVersion, oldVersion) && !config.dryRun) {
     panic(`New version "${newVersion}" is less than or equal to current version "${oldVersion}"`);
   }
 
@@ -66,19 +64,70 @@ export async function publish(config: BuildConfig) {
 
   const pkgJsonPath = join(config.distPkgDir, 'package.json');
 
-  // await execa('git', ['add', pkgJsonPath]);
-  // await execa('git', ['commit', '-f', '-m', newVersion]);
-  // await execa('git', ['tag', '-m', newVersion, gitTag]);
-  // await execa('git', ['push', '--follow-tags']);
-  console.log(`🐠 commit version "${newVersion}" with git tag "${gitTag}"`);
+  const gitAddArgs = ['add', pkgJsonPath];
+  if (config.dryRun) {
+    gitAddArgs.push('--dry-run');
+    console.log(`  git ${gitAddArgs.join(' ')}`);
+  }
+  // await execa('git', gitAddArgs);
 
-  // await execa('npm', ['publish', '--dry-run'], { cwd: config.distPkgDir });
-  console.log(`🐋 published version "${newVersion}" of @builder.io/qwik to npm`);
+  const gitCommitTitle = `"${newVersion}"`;
+  const gitCommitBody = `"skip ci"`;
+  const gitCommitArgs = ['commit', '-m', gitCommitTitle, '-m', gitCommitBody];
+  if (config.dryRun) {
+    gitCommitArgs.push('--dry-run');
+    console.log(`  git ${gitCommitArgs.join(' ')}`);
+  }
+  // await execa('git', gitCommitArgs);
 
-  // await execa('npm', ['dist-tag', 'add', `@builder.io/qwik@${newVersion}`, distTag]);
-  console.log(`🐳 set @builder.io/qwik "${distTag}" dist tag to "${newVersion}"`);
+  const gitTagArgs = ['tag', '-f', '-m', newVersion, gitTag];
+  if (config.dryRun) {
+    console.log(`  git ${gitTagArgs.join(' ')}`);
+  } else {
+    // no --dry-run flag for git tag
+    // await execa('git', gitTagArgs);
+  }
+
+  const gitPushArgs = ['push', '--follow-tags'];
+  if (config.dryRun) {
+    gitPushArgs.push('--dry-run');
+    console.log(`  git ${gitPushArgs.join(' ')}`);
+  }
+  // await execa('git', gitCommitArgs);
+  console.log(
+    `🐳 commit version "${newVersion}" with git tag "${gitTag}"${config.dryRun ? ` (dry-run)` : ``}`
+  );
+
+  const npmPublishArgs = [
+    'publish',
+    'dist-dev/builder.io-qwik.tgz',
+    '--tag',
+    distTag,
+    '--access',
+    'public',
+  ];
+  if (config.dryRun) {
+    npmPublishArgs.push('--dry-run');
+    console.log(`  npm ${npmPublishArgs.join(' ')}`);
+  }
+  // await execa('npm', npmPublishArgs, { cwd: config.distPkgDir });
+  console.log(
+    `🐋 published version "${newVersion}" of @builder.io/qwik with dist-tag "${distTag}" to npm${
+      config.dryRun ? ` (dry-run)` : ``
+    }`
+  );
 
   console.log(
-    `🐬 created github release "${gitTag}": https://github.com/BuilderIO/qwik/releases/tag/${gitTag}`
+    `🐬 created github release "${gitTag}"${
+      config.dryRun ? ` (dry-run)` : ``
+    }: https://github.com/BuilderIO/qwik/releases/tag/${gitTag}`
   );
+}
+
+async function checkExistingNpmVersion(newVersion: string) {
+  const npmVersionsCall = await execa('npm', ['view', '@builder.io/qwik', 'versions', '--json']);
+  const publishedVersions: string[] = JSON.parse(npmVersionsCall.stdout);
+  if (publishedVersions.includes(newVersion)) {
+    panic(`Version "${newVersion}" of @builder.io/qwik is already published to npm`);
+  }
 }

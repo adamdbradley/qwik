@@ -18,6 +18,7 @@ on:
 jobs:
   ############ BUILD PACKAGE ############
   build-package:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Build Package
     runs-on: ubuntu-latest
     steps:
@@ -52,6 +53,7 @@ jobs:
 
   ############ BUILD NODEJS WASM ############
   build-wasm-nodejs:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Build NodeJS WASM
     runs-on: ubuntu-latest
     steps:
@@ -85,6 +87,7 @@ jobs:
 
   ############ BUILD WEB WASM ############
   build-wasm-web:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Build Web WASM
     runs-on: ubuntu-latest
     env:
@@ -122,6 +125,7 @@ jobs:
 
   ############ BUILD PLATFORM BINDINGS ############
   build-bindings:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     strategy:
       fail-fast: false
       matrix:
@@ -219,6 +223,7 @@ jobs:
 
   ############ RELEASE ############
   release:
+    if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Release
     runs-on: ubuntu-latest
     needs:
@@ -247,7 +252,7 @@ jobs:
         run: ls *.wasm
 
       - name: Print Platform Build Artifacts
-        run: ls -R binding-*
+        run: ls -R *.node
 
       - name: Create dist-dev/@builder.io-qwik
         run: |
@@ -290,12 +295,15 @@ jobs:
           restore-keys: npm-cache-ubuntu-
 
       - name: Install NPM Dependencies
-        if: ${{ github.event_name == 'workflow_dispatch' }}
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+
+      - name: Dry-Run Publish @builder.io/qwik
+        if: ${{ github.event_name != 'workflow_dispatch' }}
+        run: node scripts --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --publish --dry-run
 
       - name: Publish @builder.io/qwik
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        run: node scripts --publish --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --publish
+        run: node scripts --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --publish
 
   ############ LINT ############
   # lint:
