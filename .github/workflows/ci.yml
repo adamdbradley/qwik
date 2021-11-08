@@ -21,9 +21,6 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Build Package
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v1
@@ -43,6 +40,8 @@ jobs:
 
       - name: Install NPM Dependencies
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Build Package
         run: node scripts --tsc --build --api --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}"
@@ -59,9 +58,6 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Build NodeJS WASM
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v1
@@ -88,7 +84,7 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: dist-wasm-nodejs
-          path: dist-wasm/*.wasm
+          path: dist-wasm/
           if-no-files-found: error
 
   ############ BUILD WEB WASM ############
@@ -96,9 +92,6 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Build Web WASM
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       CARGO_PROFILE_RELEASE_LTO: true
       CARGO_PROFILE_RELEASE_PANIC: abort
       CARGO_PROFILE_RELEASE_OPT_LEVEL: z
@@ -128,15 +121,12 @@ jobs:
         uses: actions/upload-artifact@master
         with:
           name: dist-wasm-web
-          path: dist-wasm/*.wasm
+          path: dist-wasm/
           if-no-files-found: error
 
   ############ BUILD PLATFORM BINDINGS ############
   build-bindings:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -221,6 +211,8 @@ jobs:
 
       - name: Install NPM Dependencies
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Build Binding
         run: ${{ matrix.settings.build }}
@@ -237,9 +229,6 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Release
     runs-on: ubuntu-latest
-    env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     needs:
       - build-package
       - build-wasm-nodejs
@@ -271,10 +260,10 @@ jobs:
           mv dist-dev/dist-dev-builder-io-qwik dist-dev/@builder.io-qwik
 
       - name: Print WASM Build Artifacts
-        run: ls dist-wasm-*/*.wasm
+        run: ls -R dist-wasm-*/*
 
       - name: Move WASM Artifacts
-        run: mv dist-wasm-*/*.wasm dist-dev/@builder.io-qwik
+        run: mv dist-wasm-*/*.+(wasm|js) dist-dev/@builder.io-qwik
 
       - name: Print Platform Build Artifacts
         run: ls -R dist-platform-*/*.node
@@ -291,16 +280,22 @@ jobs:
 
       - name: Install NPM Dependencies
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Dry-Run Publish @builder.io/qwik
         if: ${{ github.event_name != 'workflow_dispatch' }}
         run: node scripts --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --publish --dry-run
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish @builder.io/qwik
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: node scripts --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Github Release
         if: ${{ github.event_name == 'workflow_dispatch' && success() }}
@@ -343,6 +338,8 @@ jobs:
 
   #     - name: Install NPM Dependencies
   #       run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+        # env:
+        #   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   #     - name: Prettier Check
   #       run: yarn prettier-check
@@ -374,6 +371,8 @@ jobs:
 
   #     - name: Install NPM Dependencies
   #       run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
+        # env:
+        #   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
   #     - name: Unit Tests
   #       run: |

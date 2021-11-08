@@ -67,6 +67,11 @@ export async function publish(config: BuildConfig) {
 
   await execa('yarn', ['changelog']);
 
+  const actor = process.env.GITHUB_ACTOR || 'builderbot';
+  const actorEmail = `${actor}@users.noreply.github.com`;
+  await execa('git', ['config', 'user.email', `"${actorEmail}"`]);
+  await execa('git', ['config', 'user.name', `"${actor}"`]);
+
   const pkgJsonPath = join(config.rootDir, 'package.json');
   const gitAddArgs = ['add', pkgJsonPath];
   await execa('git', gitAddArgs);

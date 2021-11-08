@@ -134,6 +134,8 @@ const PACKAGE_FILES = [
   'qwik.win32-x64-msvc.node',
 
   // wasm
-  'qwik.nodejs.wasm',
-  'qwik.web.wasm',
+  'qwik.nodejs.wasm.js',
+  'qwik.nodejs.wasm_bg.wasm',
+  'qwik.web.wasm.js',
+  'qwik.web.wasm_bg.wasm',
 ];
