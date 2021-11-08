@@ -266,7 +266,8 @@ jobs:
         run: ls -R dist-wasm-*/*
 
       - name: Move WASM Artifacts
-        run: mv dist-wasm-*/*.+(wasm|js) dist-dev/@builder.io-qwik
+        run: |
+          mv dist-wasm-*/*.{wasm,js} dist-dev/@builder.io-qwik
 
       - name: Print Platform Build Artifacts
         run: ls -R dist-platform-*/*.node
