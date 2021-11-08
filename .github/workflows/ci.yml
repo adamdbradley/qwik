@@ -21,6 +21,9 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Build Package
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v1
@@ -56,6 +59,9 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Build NodeJS WASM
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     steps:
       - name: Setup Node.js
         uses: actions/setup-node@v1
@@ -91,6 +97,8 @@ jobs:
     name: Build Web WASM
     runs-on: ubuntu-latest
     env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
       CARGO_PROFILE_RELEASE_LTO: true
       CARGO_PROFILE_RELEASE_PANIC: abort
       CARGO_PROFILE_RELEASE_OPT_LEVEL: z
@@ -126,6 +134,9 @@ jobs:
   ############ BUILD PLATFORM BINDINGS ############
   build-bindings:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     strategy:
       fail-fast: false
       matrix:
@@ -226,6 +237,9 @@ jobs:
     if: "!contains(github.event.head_commit.message, 'skip ci')"
     name: Release
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
     needs:
       - build-package
       - build-wasm-nodejs
@@ -287,9 +301,6 @@ jobs:
       - name: Publish @builder.io/qwik
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: node scripts --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}" --publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create Github Release
         if: ${{ github.event_name == 'workflow_dispatch' && success() }}
