@@ -67,23 +67,16 @@ export async function publish(config: BuildConfig) {
 
   await execa('yarn', ['changelog']);
 
-  const pkgJsonPath = join(config.distPkgDir, 'package.json');
+  const pkgJsonPath = join(config.rootDir, 'package.json');
   const gitAddArgs = ['add', pkgJsonPath];
-  if (dryRun) {
-    gitAddArgs.push('--dry-run');
-  }
   await execa('git', gitAddArgs);
 
   const gitCommitTitle = `"${newVersion}"`;
   const gitCommitBody = `"skip ci"`;
   const gitCommitArgs = ['commit', '-m', gitCommitTitle, '-m', gitCommitBody];
-  if (dryRun) {
-    gitCommitArgs.push('--dry-run');
-  }
   await execa('git', gitCommitArgs);
 
   const gitTagArgs = ['tag', '-f', '-m', newVersion, gitTag];
-  // no --dry-run flag for git tag
   await execa('git', gitTagArgs);
 
   const gitPushArgs = ['push', '--follow-tags'];
@@ -99,7 +92,7 @@ export async function publish(config: BuildConfig) {
   if (dryRun) {
     npmPublishArgs.push('--dry-run');
   }
-  // await execa('npm', npmPublishArgs, { cwd: config.distPkgDir });
+  await execa('npm', npmPublishArgs, { cwd: config.distPkgDir });
   console.log(
     `🐋 published version "${newVersion}" of @builder.io/qwik with dist-tag "${distTag}" to npm${
       dryRun ? ` (dry-run)` : ``
