@@ -36,10 +36,6 @@ export async function generatePackageJson(config: BuildConfig) {
         import: './optimizer/index.mjs',
         require: './optimizer/index.cjs',
       },
-      './optimizer/rollup': {
-        import: './optimizer/rollup.mjs',
-        require: './optimizer/rollup.cjs',
-      },
       './server': {
         import: './server/index.mjs',
         require: './server/index.cjs',

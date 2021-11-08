@@ -50,13 +50,14 @@ export async function publish(config: BuildConfig) {
     console.log(`🚢 publishing`);
   }
 
-  const distPkgTarPath = join(config.distDir, 'builder.io-qwik.tgz');
-  await execa('npm', ['pack', distPkgTarPath]);
-
   const rootPkg = await readPackageJson(config.rootDir);
   const distTag = dryRun ? 'dryrun' : String(config.setDistTag);
   const newVersion = dryRun ? rootPkg.version : config.setVerison!;
   const gitTag = `v${newVersion}`;
+
+  const pkgTarName = `builder.io-qwik-${newVersion}.tgz`;
+  await execa('npm', ['pack'], { cwd: config.distPkgDir });
+  await execa('mv', [pkgTarName, '../'], { cwd: config.distPkgDir });
 
   if (!dryRun) {
     await checkExistingNpmVersion(newVersion);
@@ -108,8 +109,7 @@ export async function publish(config: BuildConfig) {
     `🐳 commit version "${newVersion}" with git tag "${gitTag}"${dryRun ? ` (dry-run)` : ``}`
   );
 
-  const npmPublishArgs = ['publish', distPkgTarPath, '--tag', distTag, '--access', 'public'];
-
+  const npmPublishArgs = ['publish', '--tag', distTag, '--access', 'public'];
   if (dryRun) {
     npmPublishArgs.push('--dry-run');
     console.log(`  npm ${npmPublishArgs.join(' ')}`);
