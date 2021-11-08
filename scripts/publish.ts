@@ -1,5 +1,5 @@
 import { readPackageJson, writePackageJson } from './package-json';
-import { BuildConfig, panic, readFile, writeFile } from './util';
+import { BuildConfig, panic } from './util';
 import semver from 'semver';
 import execa from 'execa';
 import { join } from 'path';
@@ -11,6 +11,11 @@ export async function setVersion(config: BuildConfig) {
     String(config.setVerison) === ''
   ) {
     return;
+  }
+
+  const distTag = String(config.setDistTag);
+  if (distTag === '' && !config.dryRun) {
+    panic(`Invalid npm dist tag "${distTag}"`);
   }
 
   const newVersion = semver.clean(String(config.setVerison), { loose: true })!;
@@ -44,10 +49,6 @@ export async function publish(config: BuildConfig) {
   }
 
   const distTag = String(config.setDistTag);
-  if (distTag == '' && !config.dryRun) {
-    panic(`Invalid npm dist tag "${distTag}"`);
-  }
-
   const newVersion = config.setVerison!;
   const gitTag = `v${newVersion}`;
 

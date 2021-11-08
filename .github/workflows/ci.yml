@@ -5,7 +5,7 @@ on:
   pull_request:
   workflow_dispatch:
     name: 'Release'
-    description: 'Create a release and publish to NPM.'
+    description: 'Commit version update to git, publish to NPM, and create a Github release.'
     inputs:
       version:
         description: 'Version'
@@ -42,7 +42,7 @@ jobs:
         run: yarn install --frozen-lockfile --registry https://registry.npmjs.org --network-timeout 300000
 
       - name: Build Package
-        run: node scripts --tsc --build --api --set-version="${{ github.event.inputs.version }}"
+        run: node scripts --tsc --build --api --set-version="${{ github.event.inputs.version }}" --set-dist-tag="${{ github.event.inputs.disttag }}"
 
       - name: Upload Package Build Artifacts
         uses: actions/upload-artifact@master
@@ -254,15 +254,14 @@ jobs:
       - name: Print Platform Build Artifacts
         run: ls -R *.node
 
-      - name: Create dist-dev/@builder.io-qwik
+      - name: Create dist-dev directory
         run: |
           mkdir dist-dev
-          mkdir dist-dev/@builder.io-qwik
 
       - name: Move Package Artifacts
         run: |
           mv dist-dev-builder-io-qwik dist-dev
-          mv dist-dev/dist-dev-builder-io-qwik/**/* dist-dev/@builder.io-qwik
+          mv dist-dev/dist-dev-builder-io-qwik dist-dev/@builder.io-qwik
 
       - name: Move WASM Artifacts
         run: |
@@ -276,9 +275,6 @@ jobs:
         run: |
           cd dist-dev/@builder.io-qwik
           mv `npm pack` ../builder.io-qwik.tgz
-
-      - name: Print dist-dev
-        run: ls -R dist-dev
 
       - name: Upload Qwik Package Artifact
         uses: actions/upload-artifact@master
