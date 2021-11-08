@@ -283,7 +283,6 @@ jobs:
           path: dist-dev/builder.io-qwik.tgz
 
       - name: Cache NPM Dependencies
-        if: ${{ github.event_name == 'workflow_dispatch' }}
         uses: actions/cache@v2
         with:
           path: node_modules

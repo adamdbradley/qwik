@@ -24,10 +24,10 @@ export async function setVersion(config: BuildConfig) {
   }
 
   const rootPkg = await readPackageJson(config.rootDir);
-  const oldVersion = rootPkg.version;
-
-  if (semver.lt(newVersion, oldVersion)) {
-    panic(`New version "${newVersion}" is less than to current version "${oldVersion}"`);
+  if (semver.lte(newVersion, rootPkg.version)) {
+    panic(
+      `New version "${newVersion}" is less than or equal to current version "${rootPkg.version}"`
+    );
   }
 
   await checkExistingNpmVersion(newVersion);
@@ -38,35 +38,33 @@ export async function setVersion(config: BuildConfig) {
 
   config.setVerison = newVersion;
 
-  console.log(`⬆️ version set to "${config.setVerison}"`);
+  console.log(`⬆️ version set to "${config.setVerison}", dist tag set to "${distTag}"`);
 }
 
 export async function publish(config: BuildConfig) {
-  if (config.dryRun) {
+  const dryRun = true || !!config.dryRun;
+
+  if (dryRun) {
     console.log(`⛴ publishing (dry-run)`);
   } else {
     console.log(`🚢 publishing`);
   }
 
-  const distTag = String(config.setDistTag);
-  const newVersion = config.setVerison!;
+  const rootPkg = await readPackageJson(config.rootDir);
+  const distTag = dryRun ? 'dryrun' : String(config.setDistTag);
+  const newVersion = dryRun ? rootPkg.version : config.setVerison!;
   const gitTag = `v${newVersion}`;
 
-  const rootPkg = await readPackageJson(config.rootDir);
-  const oldVersion = rootPkg.version;
-
-  if (semver.lte(newVersion, oldVersion) && !config.dryRun) {
-    panic(`New version "${newVersion}" is less than or equal to current version "${oldVersion}"`);
+  if (!dryRun) {
+    await checkExistingNpmVersion(newVersion);
   }
-
-  await checkExistingNpmVersion(newVersion);
 
   await validateBuild(config);
 
   const pkgJsonPath = join(config.distPkgDir, 'package.json');
 
   const gitAddArgs = ['add', pkgJsonPath];
-  if (config.dryRun) {
+  if (dryRun) {
     gitAddArgs.push('--dry-run');
     console.log(`  git ${gitAddArgs.join(' ')}`);
   }
@@ -75,14 +73,14 @@ export async function publish(config: BuildConfig) {
   const gitCommitTitle = `"${newVersion}"`;
   const gitCommitBody = `"skip ci"`;
   const gitCommitArgs = ['commit', '-m', gitCommitTitle, '-m', gitCommitBody];
-  if (config.dryRun) {
+  if (dryRun) {
     gitCommitArgs.push('--dry-run');
     console.log(`  git ${gitCommitArgs.join(' ')}`);
   }
   // await execa('git', gitCommitArgs);
 
   const gitTagArgs = ['tag', '-f', '-m', newVersion, gitTag];
-  if (config.dryRun) {
+  if (dryRun) {
     console.log(`  git ${gitTagArgs.join(' ')}`);
   } else {
     // no --dry-run flag for git tag
@@ -90,13 +88,13 @@ export async function publish(config: BuildConfig) {
   }
 
   const gitPushArgs = ['push', '--follow-tags'];
-  if (config.dryRun) {
+  if (dryRun) {
     gitPushArgs.push('--dry-run');
     console.log(`  git ${gitPushArgs.join(' ')}`);
   }
   // await execa('git', gitCommitArgs);
   console.log(
-    `🐳 commit version "${newVersion}" with git tag "${gitTag}"${config.dryRun ? ` (dry-run)` : ``}`
+    `🐳 commit version "${newVersion}" with git tag "${gitTag}"${dryRun ? ` (dry-run)` : ``}`
   );
 
   const npmPublishArgs = [
@@ -107,22 +105,30 @@ export async function publish(config: BuildConfig) {
     '--access',
     'public',
   ];
-  if (config.dryRun) {
+
+  if (dryRun) {
     npmPublishArgs.push('--dry-run');
     console.log(`  npm ${npmPublishArgs.join(' ')}`);
   }
   // await execa('npm', npmPublishArgs, { cwd: config.distPkgDir });
   console.log(
     `🐋 published version "${newVersion}" of @builder.io/qwik with dist-tag "${distTag}" to npm${
-      config.dryRun ? ` (dry-run)` : ``
+      dryRun ? ` (dry-run)` : ``
     }`
   );
 
-  console.log(
-    `🐬 created github release "${gitTag}"${
-      config.dryRun ? ` (dry-run)` : ``
-    }: https://github.com/BuilderIO/qwik/releases/tag/${gitTag}`
-  );
+  await createGithubRelease(config, dryRun, newVersion, gitTag);
+}
+
+async function createGithubRelease(
+  config: BuildConfig,
+  dryRun: boolean,
+  newVersion: string,
+  gitTag: string
+) {
+  const releaseUrl = `https://github.com/BuilderIO/qwik/releases/tag/${gitTag}`;
+
+  console.log(`🐬 created github release "${gitTag}"${dryRun ? ` (dry-run)` : ``}: ${releaseUrl}`);
 }
 
 async function checkExistingNpmVersion(newVersion: string) {
