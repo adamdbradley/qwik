@@ -56,7 +56,7 @@ export async function publish(config: BuildConfig) {
     name: 'some-test',
     version: version,
   };
-  await writePackageJson(pkgJsonPath, pkg);
+  await writePackageJson(config.rootDir, pkg);
 
   // set the user git config email
   const actor = process.env.GITHUB_ACTOR || 'builderbot';
