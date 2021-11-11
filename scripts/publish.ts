@@ -46,41 +46,18 @@ export async function setVersion(config: BuildConfig) {
 }
 
 export async function publish(config: BuildConfig) {
-  const isDryRun = !!config.dryRun;
+  const isDryRun = false;
 
-  const distPkgDir = config.distPkgDir;
   const pkgJsonPath = join(config.rootDir, 'package.json');
-  const distPkg = await readPackageJson(distPkgDir);
-  const version = distPkg.version;
+  const version = '0.0.' + String(Math.round(Math.random() * 100));
   const gitTag = `v${version}`;
-  const distTag = String(config.setDistTag) || 'dryrun';
+  const distTag = 'dev';
 
-  console.log(`🚢 publishing ${distPkg.name} ${version}`, isDryRun ? '(dry-run)' : '');
-
-  // create a pack.tgz which is useful for debugging and uploaded as an artifact
-  const pkgTarName = `builder.io-qwik-${version}.tgz`;
-  await execa('npm', ['pack'], { cwd: distPkgDir });
-  await execa('mv', [pkgTarName, '../'], { cwd: distPkgDir });
-
-  // create a changelog back to the last release tag
-  // this also gets uploaded as an artifact
-  await execa('yarn', ['changelog']);
-
-  // make sure our build is good to go and has the files we expect
-  // and each of the files can be parsed correctly
-  await validateBuild(config);
-
-  // make sure this version hasn't already been published
-  // a dev build should also not conflict
-  await checkExistingNpmVersion(distPkg, version);
-
-  // check all is good with an npm publish --dry-run before we continue
-  // dry-run does everything the same except actually publish to npm
-  const npmPublishArgs = ['publish', '--tag', distTag, '--access', 'public'];
-  await run('npm', npmPublishArgs, true, true, { cwd: distPkgDir });
-
-  // looks like the npm publish --dry-run was successful and
-  // we have more confidence that it should work on a real publish
+  const pkg: any = {
+    name: 'some-test',
+    version: version,
+  };
+  await writePackageJson(pkgJsonPath, pkg);
 
   // set the user git config email
   const actor = process.env.GITHUB_ACTOR || 'builderbot';
@@ -110,23 +87,6 @@ export async function publish(config: BuildConfig) {
   // git push to the repo
   const gitPushArgs = ['push', '--follow-tags'];
   await run('git', gitPushArgs, isDryRun);
-
-  console.log(
-    `🐳 commit version "${version}" with git tag "${gitTag}"`,
-    isDryRun ? '(dry-run)' : ''
-  );
-
-  if (!isDryRun) {
-    // if we've made it this far then the npm publish dry-run passed
-    // and all of the git command worked, time to publish!!
-    // ⛴ LET'S GO!!
-    await run('npm', npmPublishArgs, false, false, { cwd: distPkgDir });
-  }
-
-  console.log(
-    `🐋 published version "${version}" of ${distPkg.name} with dist-tag "${distTag}" to npm`,
-    isDryRun ? '(dry-run)' : ''
-  );
 }
 
 async function run(
