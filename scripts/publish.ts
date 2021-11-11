@@ -49,7 +49,7 @@ export async function publish(config: BuildConfig) {
   const isDryRun = false;
 
   const pkgJsonPath = join(config.rootDir, 'package.json');
-  const version = '0.0.' + String(Math.round(Math.random() * 100));
+  const version = '0.1.' + String(Math.round(Math.random() * 100));
   const gitTag = `v${version}`;
 
   const pkg: any = {
@@ -61,11 +61,11 @@ export async function publish(config: BuildConfig) {
   // set the user git config email
   const actor = process.env.GITHUB_ACTOR || 'builderbot';
   const actorEmail = `${actor}@users.noreply.github.com`;
-  const gitConfigEmailArgs = ['config', 'user.email', `"${actorEmail}"`];
+  const gitConfigEmailArgs = ['config', 'user.email', actorEmail];
   await run('git', gitConfigEmailArgs, isDryRun);
 
   // set the user git config name
-  const gitConfigNameArgs = ['config', 'user.name', `"${actor}"`];
+  const gitConfigNameArgs = ['config', 'user.name', actor];
   await run('git', gitConfigNameArgs, isDryRun);
 
   // git add the changed package.json
@@ -74,9 +74,8 @@ export async function publish(config: BuildConfig) {
 
   // git commit the changed package.json
   // also adding "skip ci" to the message so the commit doesn't bother building
-  const gitCommitTitle = `"${version}"`;
-  const gitCommitBody = `"skip ci"`;
-  const gitCommitArgs = ['commit', '-m', gitCommitTitle, '-m', gitCommitBody];
+  const gitCommitBody = `skip ci`;
+  const gitCommitArgs = ['commit', '-m', version, '-m', gitCommitBody];
   await run('git', gitCommitArgs, isDryRun);
 
   // git tag this commit
