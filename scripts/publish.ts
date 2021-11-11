@@ -51,7 +51,6 @@ export async function publish(config: BuildConfig) {
   const pkgJsonPath = join(config.rootDir, 'package.json');
   const version = '0.0.' + String(Math.round(Math.random() * 100));
   const gitTag = `v${version}`;
-  const distTag = 'dev';
 
   const pkg: any = {
     name: 'some-test',
