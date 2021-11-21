@@ -1,4 +1,4 @@
-import { BuildConfig, PackageJSON, panic } from './util';
+import { BuildConfig, PackageJSON, panic, writeFile } from './util';
 import execa from 'execa';
 import { join } from 'path';
 import { Octokit } from '@octokit/action';
@@ -78,7 +78,7 @@ export async function commitPrepareReleaseVersion(config: BuildConfig) {
 
   // git commit the changed package.json
   // also adding "skip ci" to the message so the commit doesn't bother building
-  const gitCommitArgs = ['commit', '-m', config.distVersion];
+  const gitCommitArgs = ['commit', '--message', config.distVersion, '--edit'];
   await run('git', gitCommitArgs);
 
   console.log(`🐳 commit version "${config.distVersion}"`);
