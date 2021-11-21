@@ -1,15 +1,23 @@
-import { BuildConfig, PackageJSON, panic, writeFile } from './util';
+import { BuildConfig, PackageJSON, panic } from './util';
 import execa from 'execa';
+import { generatePackageJson, readPackageJson, writePackageJson } from './package-json';
 import { join } from 'path';
 import { Octokit } from '@octokit/action';
 import prompts from 'prompts';
-import { readPackageJson, writePackageJson } from './package-json';
 import semver from 'semver';
 import { validateBuild } from './validate-build';
 
 export async function setDevVersion(config: BuildConfig) {
   const rootPkg = await readPackageJson(config.rootDir);
-  config.distVersion = generateDevVersion(rootPkg.version);
+  const d = new Date();
+  let v = rootPkg.version + '.';
+  v += d.getUTCFullYear() + '';
+  v += ('0' + (d.getUTCMonth() + 1)).slice(-2);
+  v += ('0' + d.getUTCDate()).slice(-2);
+  v += ('0' + d.getUTCHours()).slice(-2);
+  v += ('0' + d.getUTCMinutes()).slice(-2);
+  v += ('0' + d.getUTCSeconds()).slice(-2);
+  config.distVersion = v;
 }
 
 export async function setReleaseVersion(config: BuildConfig) {
@@ -29,6 +37,10 @@ export async function setReleaseVersion(config: BuildConfig) {
 
   // check this version isn't already published
   await checkExistingNpmVersion(rootPkg, config.distVersion);
+
+  const distPkg = await readPackageJson(config.distPkgDir);
+  distPkg.version = config.distVersion;
+  await writePackageJson(config.distPkgDir, distPkg);
 }
 
 export async function prepareReleaseVersion(config: BuildConfig) {
@@ -202,16 +214,4 @@ async function checkExistingNpmVersion(pkg: PackageJSON, newVersion: string) {
   if (publishedVersions.includes(newVersion)) {
     panic(`Version "${newVersion}" of ${pkg.name} is already published to npm`);
   }
-}
-
-function generateDevVersion(v: string) {
-  const d = new Date();
-  v += '.';
-  v += d.getUTCFullYear() + '';
-  v += ('0' + (d.getUTCMonth() + 1)).slice(-2);
-  v += ('0' + d.getUTCDate()).slice(-2);
-  v += ('0' + d.getUTCHours()).slice(-2);
-  v += ('0' + d.getUTCMinutes()).slice(-2);
-  v += ('0' + d.getUTCSeconds()).slice(-2);
-  return v;
 }
